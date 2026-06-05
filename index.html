@@ -163,7 +163,7 @@
       <div id="join-box" class="cyber-panel p-5 rounded-xl text-center flex flex-col justify-between min-h-[230px] shadow-2xl">
         <div>
           <h2 class="text-sm font-bold text-white mb-1">เข้าร่วมห้องที่มีอยู่</h2>
-          <p class="text-[11px] text-[#a1a1aa] mb-4">กรอกรหัส 6 หลัก (ไม่ต้องเลือกบทบาท ระบบจะจัดการให้อัตโนมัติ)</p>
+          <p class="text-[11px] text-[#a1a1aa] mb-4">กรอกรหัส 6 หลัก (ไม่ต้องเลือกบทบาท ระบบจัดการให้อัตโนมัติ)</p>
         </div>
         <div>
           <input id="room-input" type="text" maxlength="6" placeholder="รหัสห้อง 6 หลัก" class="bg-[#09090b] border border-[#27272a] rounded-lg p-2.5 w-full text-center font-mono text-lg uppercase tracking-widest text-white font-bold focus:outline-none focus:border-[#0071e3]">
@@ -337,7 +337,8 @@
     let isRegisterMode = false;
     let isRoomFullyOpened = false;
 
-    // STATE VARIABLES FOR REFRESH RESILIENCE
+    // STATE VARIABLES FOR REFRESH RESILIENCE & AUTO-ROLE
+    let isRoomCreator = false; // ตัวแปรบอกว่าคนนี้เป็นเจ้าของห้อง
     let activeRoomsList = [];
     let chatHistory = [];
     let currentStep = 1;
@@ -349,7 +350,7 @@
     function saveStateToLocalStorage() {
       if(!currentRoom) return;
       const stateObj = {
-        currentRoom, myRole, currentStep, buyerReady, sellerReady, dealNetPrice, isPriceAccepted, chatHistory
+        currentRoom, myRole, currentStep, buyerReady, sellerReady, dealNetPrice, isPriceAccepted, chatHistory, isRoomCreator
       };
       localStorage.setItem(`state_${currentRoom}`, JSON.stringify(stateObj));
     }
@@ -365,6 +366,7 @@
           dealNetPrice = parsed.dealNetPrice || 0;
           isPriceAccepted = parsed.isPriceAccepted || false;
           chatHistory = parsed.chatHistory || [];
+          isRoomCreator = parsed.isRoomCreator || false;
           return true;
         } catch (e) {
           console.error("Local storage state corrupted", e);
@@ -382,6 +384,7 @@
       dealNetPrice = 0;
       isPriceAccepted = false;
       chatHistory = [];
+      isRoomCreator = false;
 
       let netPriceInput = document.getElementById('input-net-price');
       if (netPriceInput) netPriceInput.value = "";
@@ -488,16 +491,7 @@
           loadStateFromLocalStorage(currentRoom);
           updateSidebarActiveRoom(currentRoom);
           goToChatScreen(currentRoom);
-          listenToRoom(currentRoom, false);
-          
-          setTimeout(() => {
-            renderChatHistory();
-            triggerFullRoomOpen(); 
-            updateMissionUI(currentStep); 
-            updateReadinessUI('buyer', buyerReady);
-            updateReadinessUI('seller', sellerReady);
-            if(dealNetPrice > 0) { renderPriceElements(dealNetPrice); }
-          }, 300);
+          listenToRoom(currentRoom);
         } else {
           checkAndRedirectToPendingRoom();
         }
@@ -524,7 +518,7 @@
         saveStateToLocalStorage();
         saveRoomToSidebar(savedRoom);
         goToChatScreen(savedRoom);
-        listenToRoom(savedRoom, false);
+        listenToRoom(savedRoom);
       }
     }
 
@@ -629,7 +623,7 @@
     function startNewDeal() {
       resetRoomUIAndState();
       currentRoom = "";
-      myRole = ""; // Clear selected role for new setup
+      myRole = ""; 
       
       document.getElementById('dashboard-page').classList.add('hidden');
       document.getElementById('sidebar').classList.add('-translate-x-full');
@@ -639,7 +633,6 @@
       document.getElementById('lobby-close-btn').classList.add('hidden');
       document.getElementById('room-input').value = "";
       
-      // Reset Role Buttons UI
       document.getElementById('btn-role-buyer').className = 'border border-[#27272a] hover:border-[#0071e3] bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all';
       document.getElementById('btn-role-seller').className = 'border border-[#27272a] hover:border-[#0071e3] bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all';
       document.getElementById('role-tag').classList.add('hidden');
@@ -666,7 +659,7 @@
 
     function generateAndPrepareRoom() {
       if(!myRole) {
-        alert("กรุณาเลือกบทบาทของคุณ (ผู้ซื้อ หรือ ผู้ขาย) ก่อนสร้างห้องใหม่ครับ");
+        alert("กรุณาเลือกบทบาทของคุณ (ผู้ซื้อ หรือ ผู้ขาย) ด้านบนก่อนสร้างห้องใหม่ครับ");
         return;
       }
       
@@ -676,6 +669,7 @@
       let code = '';
       for (let i = 0; i < 6; i++) { code += chars.charAt(Math.floor(Math.random() * chars.length)); }
       currentRoom = code;
+      isRoomCreator = true; // Set current user as creator
       
       document.getElementById('btn-create').classList.add('hidden');
       document.getElementById('generated-code').innerText = code;
@@ -684,11 +678,10 @@
 
       saveStateToLocalStorage();
       saveRoomToSidebar(code);
-      listenToRoom(code, true);
+      listenToRoom(code);
     }
 
     function copyInviteLink() {
-      // If we don't have a role somehow (e.g. joined via code but haven't synced), default to something
       let activeRoleForLink = myRole || 'buyer'; 
       const oppositeRole = activeRoleForLink === 'seller' ? 'buyer' : 'seller';
       const inviteUrl = `${window.location.origin}${window.location.pathname}?room=${currentRoom}&role=${oppositeRole}`;
@@ -702,8 +695,9 @@
       if(code.length === 6) {
         resetRoomUIAndState();
         currentRoom = code;
+        isRoomCreator = false; // Joiner is not creator
         
-        // Let the system auto-assign role when joining if they didn't select one
+        // Let the system auto-assign role when joining
         if(!loadStateFromLocalStorage(code)) {
            currentStep = 1; buyerReady = false; sellerReady = false; dealNetPrice = 0; isPriceAccepted = false; chatHistory = [];
         }
@@ -711,7 +705,7 @@
         saveStateToLocalStorage();
         saveRoomToSidebar(code);
         goToChatScreen(code);
-        listenToRoom(code, false);
+        listenToRoom(code);
       } else {
         alert("กรุณากรอกรหัสห้องให้ครบ 6 หลักครับ");
       }
@@ -784,7 +778,7 @@
       
       loadStateFromLocalStorage(code);
       goToChatScreen(code);
-      listenToRoom(code, false);
+      listenToRoom(code);
       
       setTimeout(() => {
         renderChatHistory();
@@ -811,23 +805,19 @@
       }
     }
 
-    function listenToRoom(roomCode, isCreator) {
+    function listenToRoom(roomCode) {
       if (channel) { channel.unsubscribe(); }
       
       channel = supabaseClient.channel(`room_${roomCode}`);
       channel
         .on('broadcast', { event: 'join_event' }, (response) => {
-          // If we are creator, we force role check by sending sync_presence with creatorRole
-          let payload = { role: myRole };
-          if (isCreator) payload.creatorRole = myRole;
-          
-          channel.send({ type: 'broadcast', event: 'sync_presence', payload: payload });
-          
+          if (isRoomCreator) {
+            channel.send({ type: 'broadcast', event: 'sync_presence', payload: { role: myRole, creatorRole: myRole } });
+          }
           if (response.payload.role) { updatePresenceUI(response.payload.role, true); }
         })
         .on('broadcast', { event: 'sync_presence' }, (response) => {
-          // AUTO-ASSIGN OR FIX ROLE COLLISION
-          if (!isCreator && response.payload.creatorRole) {
+          if (!isRoomCreator && response.payload.creatorRole) {
              const correctRole = response.payload.creatorRole === 'buyer' ? 'seller' : 'buyer';
              if (myRole !== correctRole) {
                 const oldRole = myRole;
@@ -844,9 +834,9 @@
                 updateMissionUI(currentStep);
                 
                 if (oldRole) {
-                   systemNotice(`⚠️ ระบบสลับบทบาทของคุณเป็น [${myRole === 'buyer' ? 'ผู้ซื้อ 🛒' : 'ผู้ขาย 💰'}] อัตโนมัติ เพื่อไม่ให้ซ้ำกับผู้สร้างห้อง`);
+                   systemNotice(`⚠️ ระบบตรวจสอบข้อมูลและสลับให้คุณเป็น [${myRole === 'buyer' ? 'ผู้ซื้อ 🛒' : 'ผู้ขาย 💰'}] อัตโนมัติ เพื่อไม่ให้ซ้ำกับผู้สร้างห้อง`);
                 } else {
-                   systemNotice(`✅ ระบบตรวจสอบข้อมูลห้อง และกำหนดให้คุณเป็น [${myRole === 'buyer' ? 'ผู้ซื้อ 🛒' : 'ผู้ขาย 💰'}] อัตโนมัติ`);
+                   systemNotice(`✅ ระบบได้กำหนดให้คุณเป็น [${myRole === 'buyer' ? 'ผู้ซื้อ 🛒' : 'ผู้ขาย 💰'}] โดยอัตโนมัติ`);
                 }
                 
                 channel.send({ type: 'broadcast', event: 'role_corrected', payload: { newRole: myRole, oldRole: oldRole } });
@@ -909,8 +899,12 @@
         .subscribe((status) => {
           if (status === 'SUBSCRIBED') {
             triggerFullRoomOpen(); 
-            // Announce presence 
-            channel.send({ type: 'broadcast', event: 'join_event', payload: { role: myRole } });
+            if(myRole) {
+               channel.send({ type: 'broadcast', event: 'join_event', payload: { role: myRole } });
+            } else {
+               // If joining without a role, just ping to ask for the creator's role
+               channel.send({ type: 'broadcast', event: 'join_event', payload: { role: "" } });
+            }
           }
         });
     }
@@ -931,8 +925,6 @@
       
       if(myRole) {
           updatePresenceUI(myRole, true);
-          const oppositeRole = myRole === 'seller' ? 'buyer' : 'seller';
-          updatePresenceUI(oppositeRole, true);
       }
       
       updateMissionUI(currentStep);
@@ -1011,7 +1003,7 @@
         return;
       }
 
-      const fee = netPrice * 0.05; // คิดค่าธรรมเนียม 5%
+      const fee = netPrice * 0.05; 
       const totalWithFee = netPrice + fee;
       
       if (isPriceAccepted || currentStep >= 3) {
@@ -1077,7 +1069,7 @@
       else if(step === 2) {
         if(myRole === 'seller') {
           if(!isPriceAccepted) document.getElementById('seller-price-zone').classList.remove('hidden');
-        } else {
+        } else if (myRole === 'buyer') {
           if(dealNetPrice > 0 && !isPriceAccepted) {
             document.getElementById('buyer-price-zone').classList.remove('hidden');
             renderPriceElements(dealNetPrice);
@@ -1172,7 +1164,7 @@
       let input = document.getElementById('chat-input');
       let text = input.value.trim();
       if (!text) return;
-      if (!myRole) { alert("กำลังซิงค์บทบาทกับห้อง กรุณารอสักครู่..."); return; }
+      if (!myRole) { alert("กำลังเชื่อมต่อระบบ กรุณารอสักครู่..."); return; }
       
       const msgObj = { type: 'msg', text: text, senderRole: myRole };
       addMessageToUIAndState(msgObj, false);
