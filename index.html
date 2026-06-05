@@ -133,26 +133,11 @@
     <div id="lobby-grid" class="opacity-20 pointer-events-none grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl transition-all duration-300">
       
       <div id="create-box" class="cyber-panel p-5 rounded-xl text-center flex flex-col justify-between min-h-[230px] shadow-2xl relative">
-        <button id="lobby-close-btn" onclick="goHome()" class="hidden absolute top-3 right-4 text-lg font-bold text-[#a1a1aa] hover:text-white transition-all">✕</button>
-        
         <div>
           <h2 class="text-sm font-bold text-white mb-1">เริ่มต้นสร้างดีลใหม่</h2>
-          <p class="text-[11px] text-[#a1a1aa] mb-4">กดปุ่มด้านล่างเพื่อรับรหัสเข้าห้องและคัดลอกลิงก์ส่งต่อ</p>
+          <p class="text-[11px] text-[#a1a1aa] mb-4">ระบบจะสุ่มรหัสและเปิดห้องดีลทันที</p>
         </div>
-        
-        <div id="code-display" class="hidden my-2 p-3 bg-[#09090b] rounded-lg border border-[#27272a] cyber-glow flex flex-col gap-2">
-          <div>
-            <p class="text-[10px] text-[#a1a1aa] mb-0.5 font-medium">รหัสห้องกลาง (สำหรับคัดลอกส่งให้อีกฝ่าย)</p>
-            <p id="generated-code" class="text-3xl font-mono font-black text-[#0071e3] tracking-widest">XXXXXX</p>
-          </div>
-          <p class="text-[11px] text-[#ff9f0a] font-medium animate-pulse mt-1">⏳ รอคู่ค้ากดลิงก์เชื่อมต่อเข้ามา เพื่อเริ่มภารกิจแชท...</p>
-          <div class="border-t border-[#27272a] pt-2 mt-1">
-            <button onclick="copyInviteLink()" class="w-full bg-[#0071e3] hover:bg-[#147ce5] text-white py-2 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md">
-              🔗 คัดลอกลิงก์เชิญอัตโนมัติ
-            </button>
-          </div>
-        </div>
-        <button id="btn-create" onclick="generateAndPrepareRoom()" class="bg-[#0071e3] hover:bg-[#147ce5] text-white font-bold py-2.5 px-6 rounded-lg w-full text-xs uppercase tracking-wider transition-colors shadow-lg">สร้างและรับรหัสห้องดีล</button>
+        <button id="btn-create" onclick="generateAndPrepareRoom()" class="bg-[#0071e3] hover:bg-[#147ce5] text-white font-bold py-2.5 px-6 rounded-lg w-full text-xs uppercase tracking-wider transition-colors shadow-lg">สุ่มรหัสและเปิดห้องดีล</button>
       </div>
 
       <div id="join-box" class="cyber-panel p-5 rounded-xl text-center flex flex-col justify-between min-h-[230px] shadow-2xl">
@@ -183,9 +168,15 @@
               </button>
             </div>
           </div>
-          <div class="flex justify-between items-center">
-            <span class="text-sm font-bold text-white font-mono">ROOM: <span id="chat-room-id" class="text-[#0071e3]"></span></span>
-            <span id="price-tag" class="text-base font-black text-[#30d5c8] bg-[#30d5c8]/10 px-3 py-1 rounded-md border border-[#30d5c8]/20">คุยรายละเอียดราคาในแชท</span>
+          
+          <div class="flex flex-col gap-2 mb-2">
+            <div class="flex justify-between items-center">
+              <span class="text-sm font-bold text-white font-mono">ROOM: <span id="chat-room-id" class="text-[#0071e3]"></span></span>
+              <span id="price-tag" class="text-base font-black text-[#30d5c8] bg-[#30d5c8]/10 px-3 py-1 rounded-md border border-[#30d5c8]/20">คุยรายละเอียดราคาในแชท</span>
+            </div>
+            <button onclick="copyInviteLink()" class="w-full bg-[#0071e3] hover:bg-[#147ce5] text-white py-1.5 rounded-md text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all shadow-md">
+              🔗 คัดลอกลิงก์เชิญคู่ค้าอัตโนมัติ
+            </button>
           </div>
         </div>
 
@@ -247,7 +238,7 @@
                 <h4 class="text-xs font-bold text-white">ขั้นตอนที่ 4: ผู้ซื้อตรวจสอบและยืนยันรับของ</h4>
                 <div id="buyer-confirm-zone" class="hidden mt-3 flex flex-col gap-2">
                   <button id="btn-confirm-1" onclick="confirmReceipt(1)" class="bg-[#ff9f0a] text-white px-4 py-2 rounded-md text-[11px] font-bold">⚠️ ตรวจสอบรหัสแล้ว (ยืนยันรอบที่ 1)</button>
-                  <button id="btn-confirm-2" onclick="hidden bg-[#30d5c8] text-black px-4 py-2 rounded-md text-[11px] font-black">✅ เปลี่ยนรหัสผ่านเรียบร้อย (ยืนยันรอบที่ 2)</button>
+                  <button id="btn-confirm-2" onclick="confirmReceipt(2)" class="hidden bg-[#30d5c8] text-black px-4 py-2 rounded-md text-[11px] font-black">✅ เปลี่ยนรหัสผ่านเรียบร้อย (ยืนยันรอบที่ 2)</button>
                 </div>
               </div>
             </div>
@@ -278,7 +269,6 @@
     let myUsername = "";
     let isRegisterMode = false;
     
-    // โครงสร้างใหม่เพื่อรองรับการทำงานแบบหลายห้อง (Multi-room state)
     let roomsState = {}; 
 
     function togglePassword(inputId, iconId) {
@@ -453,7 +443,6 @@
         document.getElementById('chat-room-id').innerText = roomCode;
         document.getElementById('chat-messages').innerHTML = "";
         
-        // โหลดข้อความเก่าใน State ของห้องนั้นขึ้นมาแสดงผล
         const state = roomsState[roomCode];
         if (state && state.messages) {
           state.messages.forEach(m => {
@@ -462,7 +451,6 @@
           });
         }
 
-        // เชื่อมต่อช่องสัญญาณแบบ Real-time ใหม่ของห้องนี้
         listenToRoom(roomCode, state.isCreator || false);
 
         if (state.isRoomFullyOpened) {
@@ -509,8 +497,6 @@
       document.getElementById('sidebar').classList.add('-translate-x-full');
       
       document.getElementById('btn-create').classList.remove('hidden');
-      document.getElementById('code-display').classList.add('hidden');
-      document.getElementById('lobby-close-btn').classList.add('hidden');
       document.getElementById('room-input').value = "";
       
       document.getElementById('lobby-page').classList.remove('hidden');
@@ -538,11 +524,6 @@
       let code = '';
       for (let i = 0; i < 6; i++) { code += chars.charAt(Math.floor(Math.random() * chars.length)); }
       currentRoom = code;
-      
-      document.getElementById('btn-create').classList.add('hidden');
-      document.getElementById('generated-code').innerText = code;
-      document.getElementById('code-display').classList.remove('hidden');
-      document.getElementById('lobby-close-btn').classList.remove('hidden');
 
       roomsState[code] = { isRoomFullyOpened: false, currentStep: 0, price: 0, messages: [], isCreator: true };
       saveActiveRoomsToStorage();
@@ -684,7 +665,6 @@
         waitNotice.innerText = "✅ ห้องซื้อขายเปิดทำงานสำเร็จ! อีกฝ่ายได้เข้าร่วมห้องดีลเรียบร้อยแล้ว";
       }
 
-      // เริ่มต้นทำภารกิจขั้นตอนที่ 1 ของระบบ: ผู้ขายตั้งราคากลาง
       if (roomsState[roomCode].currentStep === 0) {
         if (myRole === 'seller') {
           document.getElementById('seller-price-zone').classList.remove('hidden');
@@ -693,7 +673,6 @@
           document.getElementById('step-1-status').innerText = "⏳ กำลังรอให้ฝั่งผู้ขายระบุจำนวนราคากลางระบบ...";
         }
       } else {
-        // หากเคยตกลงราคากันไปแล้ว ให้โหลด UI ของสเต็ปปัจจุบันขึ้นมา
         updateMissionUI(roomsState[roomCode].currentStep);
       }
     }
@@ -731,11 +710,9 @@
       const targetPrice = roomsState[currentRoom].price;
 
       if (step === 1) {
-        // อัปเดตราคาที่แถบหัวข้อแชทหลัก
         document.getElementById('price-tag').innerText = `💰 ดีลราคากลาง: ${targetPrice} บาท`;
         document.getElementById('price-tag').className = "text-base font-black text-black bg-[#30d5c8] px-3 py-1 rounded-md border border-[#30d5c8]/50 animate-pulse";
         
-        // เคลียร์ปุ่มฟังก์ชันตั้งราคาเดิมทิ้ง
         document.getElementById('seller-price-zone').classList.add('hidden');
         document.getElementById('buyer-price-zone').classList.add('hidden');
 
@@ -743,9 +720,8 @@
         document.getElementById('check-1').className = "w-6 h-6 rounded-md font-bold flex items-center justify-center text-xs text-black bg-[#30d5c8]";
         document.getElementById('step-1').className = "mission-step p-4 bg-[#09090b] border border-[#27272a] rounded-xl flex items-start gap-3 opacity-50";
         
-        // ปลดล็อกขั้นตอนที่ 2: โอนเงินเข้าบัญชีกลาง
         document.getElementById('step-2').className = "mission-step p-4 bg-[#09090b] border border-[#0071e3] rounded-xl flex flex-col gap-3 cyber-glow";
-        document.getElementById('bank-price-notice').innerText = `💰 บัญชีกลางร้าน: 000-0-00000-0 (ธ.กสิกรไทย)ยอดที่ต้องโอน: ${targetPrice} บาท`;
+        document.getElementById('bank-price-notice').innerText = `💰 บัญชีกลางร้าน: 000-0-00000-0 (ธ.กสิกรไทย) | ยอดที่ต้องโอน: ${targetPrice} บาท`;
         
         if (myRole === 'buyer') {
           document.getElementById('buyer-upload-zone').classList.remove('hidden');
@@ -764,7 +740,6 @@
         document.getElementById('buyer-upload-zone').classList.add('hidden');
         document.getElementById('step-2-status').classList.add('hidden');
         
-        // ปลดล็อกขั้นตอนที่ 3: ผู้ขายส่งรหัส
         document.getElementById('step-3').className = "mission-step p-4 bg-[#09090b] border border-[#ff9f0a] rounded-xl flex items-start gap-3 cyber-glow";
         document.getElementById('step-3-status').classList.remove('hidden');
         systemNotice(`📢 ระบบกลาง: ตรวจพบสลิปและยอดโอนจำนวน ${targetPrice} บาท เข้าบัญชีกลางปลอดภัยเรียบร้อย 100%! ผู้ขายสามารถทำการส่งไอดีหรือข้อมูลสินค้าในแชทนี้ได้ทันทีครับ`);
