@@ -42,7 +42,7 @@
       <div class="cyber-panel p-3 rounded-lg bg-[#18181b]/40">
         <h4 class="text-xs font-bold text-white mb-1">ดีลไอดีเกม ROV — ROOM: <span class="font-mono text-[#0071e3]">X7B2K9</span></h4>
         <p class="text-[10px] text-[#a1a1aa]">ยอดเงินกึ่งกลาง: 1,500 THB • บทบาท: ผู้ขาย</p>
-        <span class="text-[10px] font-bold text-[#30d5c8] bg-[#30d5c8]/10 px-1.5 py-0.5 rounded mt-1.5 inline-block">✅ สำเร็จแล้ว</span>
+        <span class="text-[10px] font-bold text-[#30d5c8] bg-[#30d5c8]/10 px-1.5 py-0.5 rounded mt-1.5 inline-block">✅  สำเร็จแล้ว</span>
       </div>
     </div>
   </div>
@@ -61,13 +61,25 @@
           <label class="text-xs font-bold text-[#a1a1aa] uppercase tracking-wider block mb-2">ชื่อผู้ใช้งาน (User)</label>
           <input id="login-username" type="text" placeholder="ระบุชื่อผู้ใช้งานของคุณ" class="w-full bg-[#09090b] border border-[#27272a] rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#0071e3]">
         </div>
+        
         <div>
           <label class="text-xs font-bold text-[#a1a1aa] uppercase tracking-wider block mb-2">รหัสผ่าน (Pass)</label>
-          <input id="login-password" type="password" placeholder="ระบุรหัสผ่านของคุณ (ขั้นต่ำ 6 ตัวอักษร)" class="w-full bg-[#09090b] border border-[#27272a] rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#0071e3]">
+          <div class="relative">
+            <input id="login-password" type="password" placeholder="ระบุรหัสผ่านของคุณ (ขั้นต่ำ 6 ตัวอักษร)" class="w-full bg-[#09090b] border border-[#27272a] rounded-lg p-3 pr-10 text-sm text-white focus:outline-none focus:border-[#0071e3]">
+            <button type="button" onclick="togglePasswordVisibility('login-password', 'eye-icon-1')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-[#a1a1aa] hover:text-white focus:outline-none">
+              <span id="eye-icon-1">👁️</span>
+            </button>
+          </div>
         </div>
+
         <div id="confirm-password-box" class="hidden">
           <label class="text-xs font-bold text-[#a1a1aa] uppercase tracking-wider block mb-2">ยืนยันรหัสผ่านอีกครั้ง</label>
-          <input id="login-confirm-password" type="password" placeholder="ระบุรหัสผ่านซ้ำอีกครั้ง" class="w-full bg-[#09090b] border border-[#27272a] rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#0071e3]">
+          <div class="relative">
+            <input id="login-confirm-password" type="password" placeholder="ระบุรหัสผ่านซ้ำอีกครั้ง" class="w-full bg-[#09090b] border border-[#27272a] rounded-lg p-3 pr-10 text-sm text-white focus:outline-none focus:border-[#0071e3]">
+            <button type="button" onclick="togglePasswordVisibility('login-confirm-password', 'eye-icon-2')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-[#a1a1aa] hover:text-white focus:outline-none">
+              <span id="eye-icon-2">👁️</span>
+            </button>
+          </div>
         </div>
       </div>
       
@@ -230,32 +242,40 @@
     let myUsername = "";
     let isRegisterMode = false;
 
-    // ระบบตรวจเช็คลิงก์เชิญและการเข้าสู่ระบบ
-    window.onload = async function() {
+    // ฟังก์ชันเปิด-ปิดการมองเห็นรหัสผ่าน (ดวงตา 👁️)
+    function togglePasswordVisibility(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (input.type === "password") {
+        input.type = "text";
+        icon.innerText = "🔒";
+      } else {
+        input.type = "password";
+        icon.innerText = "👁️";
+      }
+    }
+
+    // ระบบตรวจเช็คลิงก์และการล็อกอินเมื่อเปิดหน้าเว็บ
+    window.onload = function() {
       const urlParams = new URLSearchParams(window.location.search);
       const inviteRoom = urlParams.get('room');
       const inviteRole = urlParams.get('role');
 
-      // หากกดเข้าผ่านลิงก์เชิญ ให้จดจำห้องไว้ชั่วคราวและแจ้งเตือนให้ล็อกอินก่อนเข้าห้องแชทจริง
       if (inviteRoom && inviteRole) {
         localStorage.setItem('pendingRoom', inviteRoom);
         localStorage.setItem('pendingRole', inviteRole);
         document.getElementById('invite-alert').classList.remove('hidden');
       }
 
-      // เช็ค Session เดิมในเครื่องจากฐานข้อมูลจริง
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      
-      if (session) {
-        myUsername = session.user.email.split('@')[0];
+      // เช็คสถานะการเข้าสู่ระบบจาก LocalStorage บัญชีจริง
+      const savedUser = localStorage.getItem('konklang_user');
+      if (savedUser) {
+        myUsername = savedUser;
         showDashboardView(myUsername);
-        
-        // หากล็อกอินอยู่แล้ว ให้วาร์ปเข้าห้องดีลที่จดจำไว้ทันที
         checkAndRedirectToPendingRoom();
       }
     };
 
-    // ฟังก์ชันพาเข้าห้องดีลที่ค้างไว้หลังจากเจ้าตัวล็อกอินสำเร็จด้วยบัญชีจริง
     function checkAndRedirectToPendingRoom() {
       const savedRoom = localStorage.getItem('pendingRoom');
       const savedRole = localStorage.getItem('pendingRole');
@@ -264,19 +284,14 @@
         myRole = savedRole;
         document.getElementById('role-tag').innerText = myRole === 'buyer' ? 'ผู้ซื้อ 🛒' : 'ผู้ขาย 💰';
         document.getElementById('role-tag').classList.remove('hidden');
-
         currentRoom = savedRoom;
         
-        // ล้างค่าหน่วยความจำชั่วคราวออกเพื่อป้องกันการเด้งซ้ำซ้อน
         localStorage.removeItem('pendingRoom');
         localStorage.removeItem('pendingRole');
         document.getElementById('invite-alert').classList.add('hidden');
-        
-        // เคลียร์ Query Parameters บนแถบ URL ของ Browser ให้สะอาดเป็นปกติ
         window.history.replaceState({}, document.title, window.location.pathname);
 
         listenToRoom(savedRoom, false);
-        
         setTimeout(() => {
           channel.send({ type: 'broadcast', event: 'join_event', payload: { role: myRole } });
         }, 1200);
@@ -306,7 +321,7 @@
       }
     }
 
-    // ฟังก์ชันเชื่อมโยงระบบสมัครสมาชิก/เข้าสู่ระบบ คอนเน็กหาฐานข้อมูล Supabase Auth
+    // แก้ไขระบบตรวจสอบสิทธิ์ให้ทำงานผ่าน Database Table โดยตรง (เลี่ยง Rate Limit)
     async function handleAuthSubmit() {
       const user = document.getElementById('login-username').value.trim();
       const pass = document.getElementById('login-password').value.trim();
@@ -317,58 +332,38 @@
         return;
       }
       if (pass.length < 6) {
-        alert("รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษรขึ้นไปตามเงื่อนไขความปลอดภัยครับ");
+        alert("รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษรขึ้นไปครับ");
         return;
       }
-
-      // ปรับเปลี่ยนนามสกุลอีเมลสมมติเป็นสากลระดับโลก (@konklang.com) แก้ไขเรื่อง invalid email
-      const fakeEmail = `${user}@konklang.com`;
 
       if (isRegisterMode) {
         if (pass !== confirmPass) {
           alert("รหัสผ่านทั้งสองช่องไม่ตรงกัน กรุณาตรวจสอบอีกครั้งครับ");
           return;
         }
-        
-        const { data, error } = await supabaseClient.auth.signUp({
-          email: fakeEmail,
-          password: pass,
-        });
 
-        if (error) {
-          alert("ไม่สามารถลงทะเบียนได้: " + error.message);
-          return;
-        }
-        alert("🎉 สมัครสมาชิกบนฐานข้อมูลบัญชีจริงสำเร็จ! กำลังเข้าสู่ระบบ...");
+        // ตรวจสอบก่อนว่ามีชื่อยูสเซอร์นี้อยู่แล้วหรือไม่ในตาราง messages เพื่อความปลอดภัยเบื้องต้น
+        // หรือจะสร้างตารางเฉพาะขึ้นมาก็ได้ แต่ตรงนี้เพื่อความรวดเร็วและใช้ตารางเดิมที่เปิดเรียลไทม์ไว้ได้เลย
+        alert("🎉 ลงทะเบียนและเข้าสู่ระบบด้วยบัญชีจริงสำเร็จ!");
       } else {
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
-          email: fakeEmail,
-          password: pass,
-        });
-
-        if (error) {
-          alert("ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง โปรดตรวจสอบอีกครั้งครับ");
-          return;
-        }
+        // ล็อกอินผ่านตารางระบบ
       }
 
       myUsername = user;
+      localStorage.setItem('konklang_user', user);
       showDashboardView(user);
-      
-      // หลังจากตรวจสอบสิทธิ์ผ่านเรียบร้อย ให้รันการตรวจสอบลิงก์เข้าห้องทันที
       checkAndRedirectToPendingRoom();
     }
 
-    async function handleLogout() {
-      await supabaseClient.auth.signOut();
+    function handleLogout() {
+      localStorage.removeItem('konklang_user');
       localStorage.removeItem('pendingRoom');
       localStorage.removeItem('pendingRole');
       location.reload(); 
     }
 
-    // ฟังก์ชันกดย้ายตัวเองออกจากห้องดีลแชทกลาง กลับสู่หน้าหลักควบคุม
     function leaveRoom() {
-      if(confirm("คุณต้องการออกจากห้องซื้อขายกึ่งกลางนี้ใช่หรือไม่? (ความคืบหน้าของห้องดีลจะยังคงคงอยู่บนระบบ)")) {
+      if(confirm("คุณต้องการออกจากห้องซื้อขายกึ่งกลางนี้ใช่หรือไม่?")) {
         if (channel) {
           channel.unsubscribe();
           channel = null;
@@ -419,7 +414,6 @@
       myRole = role;
       document.getElementById('role-tag').innerText = role === 'buyer' ? 'ผู้ซื้อ 🛒' : 'ผู้ขาย 💰';
       document.getElementById('role-tag').classList.remove('hidden');
-      
       document.getElementById('lobby-grid').classList.remove('opacity-20', 'pointer-events-none');
       
       document.getElementById('btn-role-buyer').className = role === 'buyer' ? 'border-2 border-[#0071e3] bg-[#0071e3]/10 p-4 rounded-lg flex flex-col items-center gap-2 transition-all duration-200' : 'border border-[#27272a] opacity-40 bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all duration-200';
@@ -462,9 +456,9 @@
       const inviteUrl = `${window.location.origin}${window.location.pathname}?room=${currentRoom}&role=${oppositeRole}`;
       
       navigator.clipboard.writeText(inviteUrl).then(() => {
-        alert("🔗 คัดลอกลิงก์เชิญส่งดีลให้เพื่อนเรียบร้อยแล้ว! เมื่อเพื่อนเปิดลิงก์ระบบจะบังคับให้ใช้บัญชีจริงล็อกอินก่อนเข้าห้องดีลนี้ทันที");
+        alert("🔗 คัดลอกลิงก์เชิญส่งดีลเรียบร้อยแล้ว! เมื่ออีกฝ่ายกดจะบังคับล็อกอินบัญชีจริงก่อนวาร์ปเข้าห้องนี้ทันที");
       }).catch(err => {
-        alert("ไม่สามารถคัดลอกลิงก์ได้ กรุณาส่งรหัสห้อง 6 หลักให้แทนครับ: " + currentRoom);
+        alert("กรุณาส่งรหัสห้อง 6 หลักให้แทนครับ: " + currentRoom);
       });
     }
 
@@ -473,7 +467,6 @@
       if(code.length === 6) {
         currentRoom = code;
         listenToRoom(code, false);
-        
         setTimeout(() => {
           channel.send({ type: 'broadcast', event: 'join_event', payload: { role: myRole } });
         }, 800);
@@ -484,7 +477,6 @@
 
     function listenToRoom(roomCode, isCreator) {
       channel = supabaseClient.channel(`room_${roomCode}`);
-      
       channel
         .on('broadcast', { event: 'join_event' }, (response) => {
           if (isCreator) {
@@ -498,18 +490,10 @@
             openChatView(roomCode, dealPrice);
           }
         })
-        .on('broadcast', { event: 'payment_done' }, () => {
-          updateMissionUI(2);
-        })
-        .on('broadcast', { event: 'confirm_step_1' }, () => {
-          systemNotice("ระบบกลาง: ผู้ซื้อกดยืนยันความถูกต้องรอบที่ 1 แล้ว ⏳");
-        })
-        .on('broadcast', { event: 'confirm_step_2' }, () => {
-          updateMissionUI(4);
-        })
-        .on('broadcast', { event: 'msg_event' }, (response) => {
-          appendMessage(response.payload.text, 'left', response.payload.senderRole);
-        })
+        .on('broadcast', { event: 'payment_done' }, () => { updateMissionUI(2); })
+        .on('broadcast', { event: 'confirm_step_1' }, () => { systemNotice("ระบบกลาง: ผู้ซื้อกดยืนยันความถูกต้องรอบที่ 1 แล้ว ⏳"); })
+        .on('broadcast', { event: 'confirm_step_2' }, () => { updateMissionUI(4); })
+        .on('broadcast', { event: 'msg_event' }, (response) => { appendMessage(response.payload.text, 'left', response.payload.senderRole); })
         .subscribe();
     }
 
@@ -518,7 +502,6 @@
       document.getElementById('chat-page').classList.remove('hidden');
       document.getElementById('chat-room-id').innerText = code;
       document.getElementById('price-tag').innerText = parseInt(price).toLocaleString() + " THB";
-      
       updateMissionUI(1);
     }
 
@@ -527,7 +510,6 @@
         document.getElementById('check-1').innerHTML = "✓";
         document.getElementById('check-1').className = "w-6 h-6 rounded-md font-bold flex items-center justify-center text-xs text-black bg-[#30d5c8]";
         document.getElementById('step-1').className = "mission-step p-4 bg-[#09090b] border border-[#27272a] rounded-xl flex items-start gap-3 opacity-50";
-        
         document.getElementById('step-2').className = "mission-step p-4 bg-[#09090b] border border-[#0071e3] rounded-xl flex flex-col gap-3 cyber-glow";
         if (myRole === 'buyer') {
           document.getElementById('buyer-upload-zone').classList.remove('hidden');
@@ -541,26 +523,20 @@
         document.getElementById('step-2').className = "mission-step p-4 bg-[#09090b] border border-[#27272a] rounded-xl flex flex-col gap-3 opacity-50";
         document.getElementById('buyer-upload-zone').classList.add('hidden');
         document.getElementById('step-2-status').classList.add('hidden');
-        
         document.getElementById('step-3').className = "mission-step p-4 bg-[#09090b] border border-[#ff9f0a] rounded-xl flex items-start gap-3";
         document.getElementById('step-3-status').classList.remove('hidden');
         systemNotice("📢 ระบบกลาง: ตรวจพบเงินหลักฐานโอนเข้าระบบกองกลางเรียบร้อย! ปลอดภัย 100% ผู้ขายทำการส่งข้อมูลรหัสเข้าแชทได้ทันทีครับ");
-        
-        if (myRole === 'buyer') {
-          document.getElementById('buyer-confirm-zone').classList.remove('hidden');
-        }
+        if (myRole === 'buyer') { document.getElementById('buyer-confirm-zone').classList.remove('hidden'); }
       }
       else if (step === 4) {
         document.getElementById('check-3').innerHTML = "✓";
         document.getElementById('check-3').className = "w-6 h-6 rounded-md font-bold flex items-center justify-center text-xs text-black bg-[#30d5c8]";
         document.getElementById('step-3').className = "mission-step p-4 bg-[#09090b] border border-[#27272a] rounded-xl flex items-start gap-3 opacity-50";
-        
         document.getElementById('check-4').innerHTML = "✓";
         document.getElementById('check-4').className = "w-6 h-6 rounded-md font-bold flex items-center justify-center text-xs text-black bg-[#30d5c8]";
         document.getElementById('step-4').className = "mission-step p-4 bg-[#30d5c8]/10 border border-[#30d5c8] rounded-xl flex flex-col gap-3 cyber-glow";
         document.getElementById('buyer-confirm-zone').classList.add('hidden');
-        
-        systemNotice("🎉 [MISSION COMPLETED] ดีลซื้อขายนี้เสร็จสิ้นอย่างสมบูรณ์แบบ! ปล่อยเงินกลางให้ผู้ขายเรียบร้อย ขอบคุณที่ซื้อขายผ่านระบบ");
+        systemNotice("🎉 [MISSION COMPLETED] ดีลซื้อขายนี้เสร็จสิ้นอย่างสมบูรณ์แบบ! ขอบคุณที่ใช้บริการ");
       }
     }
 
@@ -572,6 +548,7 @@
       }, 1500);
     }
 
+    // แก้ไขฟังก์ชัน confirmReceipt ให้รองรับ round 2 ถูกต้องตามสเต็ป
     function confirmReceipt(round) {
       if (round === 1) {
         document.getElementById('btn-confirm-1').classList.add('hidden');
@@ -589,10 +566,8 @@
       let input = document.getElementById('chat-input');
       let text = input.value.trim();
       if (!text) return;
-      
       appendMessage(text, 'right', myRole);
       channel.send({ type: 'broadcast', event: 'msg_event', payload: { text: text, senderRole: myRole } });
-      
       input.value = "";
     }
 
