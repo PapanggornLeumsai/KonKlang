@@ -133,26 +133,26 @@
     <div id="lobby-grid" class="opacity-20 pointer-events-none grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl transition-all duration-300">
       
       <div id="create-box" class="cyber-panel p-5 rounded-xl text-center flex flex-col justify-between min-h-[230px] shadow-2xl relative">
-        <button id="lobby-close-btn" onclick="goHome()" class="hidden absolute top-3 right-4 text-lg font-bold text-[#a1a1aa] hover:text-white transition-all">✕</button>
+        <button onclick="goHome()" class="absolute top-3 right-4 text-lg font-bold text-[#a1a1aa] hover:text-white transition-all">✕</button>
         
         <div>
-          <h2 class="text-sm font-bold text-white mb-1">เริ่มต้นสร้างดีลใหม่</h2>
-          <p class="text-[11px] text-[#a1a1aa] mb-4">กดปุ่มด้านล่างเพื่อรับรหัสเข้าห้องและคัดลอกลิงก์ส่งต่อ</p>
+          <h2 class="text-sm font-bold text-white mb-1">ส่งลิงก์เชิญคู่ค้า</h2>
+          <p class="text-[11px] text-[#a1a1aa] mb-4">คัดลอกลิงก์ส่งให้อีกฝ่าย หรือใช้รหัสห้องด้านล่างเพื่อเชื่อมต่อ</p>
         </div>
         
-        <div id="code-display" class="hidden my-2 p-3 bg-[#09090b] rounded-lg border border-[#27272a] cyber-glow flex flex-col gap-2">
+        <div class="my-2 p-3 bg-[#09090b] rounded-lg border border-[#27272a] cyber-glow flex flex-col gap-2">
           <div>
-            <p class="text-[10px] text-[#a1a1aa] mb-0.5 font-medium">รหัสห้องกลาง (สำหรับคัดลอกส่งให้อีกฝ่าย)</p>
+            <p class="text-[10px] text-[#a1a1aa] mb-0.5 font-medium">รหัสห้องกลางของคุณ</p>
             <p id="generated-code" class="text-3xl font-mono font-black text-[#0071e3] tracking-widest">XXXXXX</p>
           </div>
-          <p class="text-[11px] text-[#ff9f0a] font-medium animate-pulse mt-1">⏳ รอคู่ค้ากดลิงก์เชื่อมต่อเข้ามา เพื่อเริ่มภารกิจแชท...</p>
-          <div class="border-t border-[#27272a] pt-2 mt-1">
-            <button onclick="copyInviteLink()" class="w-full bg-[#0071e3] hover:bg-[#147ce5] text-white py-2 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md">
-              🔗 คัดลอกลิงก์เชิญอัตโนมัติ
-            </button>
-          </div>
+          <p class="text-[11px] text-[#ff9f0a] font-medium animate-pulse mt-1">⏳ รออีกฝั่งกดเข้าห้อง เพื่อเริ่มภารกิจ...</p>
         </div>
-        <button id="btn-create" onclick="generateAndPrepareRoom()" class="bg-[#0071e3] hover:bg-[#147ce5] text-white font-bold py-2.5 px-6 rounded-lg w-full text-xs uppercase tracking-wider transition-colors shadow-lg">สร้างและรับรหัสห้องดีล</button>
+
+        <div class="w-full mt-2">
+          <button onclick="copyInviteLink()" class="w-full bg-[#0071e3] hover:bg-[#147ce5] text-white py-3 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg">
+            🔗 คัดลอกลิงก์เชิญส่งให้คู่ค้า
+          </button>
+        </div>
       </div>
 
       <div id="join-box" class="cyber-panel p-5 rounded-xl text-center flex flex-col justify-between min-h-[230px] shadow-2xl">
@@ -414,12 +414,15 @@
     function startNewDeal() {
       document.getElementById('dashboard-page').classList.add('hidden');
       document.getElementById('sidebar').classList.add('-translate-x-full');
-      
-      document.getElementById('btn-create').classList.remove('hidden');
-      document.getElementById('code-display').classList.add('hidden');
-      document.getElementById('lobby-close-btn').classList.add('hidden');
       document.getElementById('room-input').value = "";
       
+      // เจนโค้ดสแตนด์บายไว้ล่วงหน้าเลยทันทีก่อนเข้าสู่หน้า Lobby
+      let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let code = '';
+      for (let i = 0; i < 6; i++) { code += chars.charAt(Math.floor(Math.random() * chars.length)); }
+      currentRoom = code;
+      document.getElementById('generated-code').innerText = code;
+
       document.getElementById('lobby-page').classList.remove('hidden');
     }
 
@@ -434,33 +437,28 @@
       myRole = role;
       document.getElementById('role-tag').innerText = role === 'buyer' ? 'ผู้ซื้อ 🛒' : 'ผู้ขาย 💰';
       document.getElementById('role-tag').classList.remove('hidden');
+      
+      // ปลดล็อก Grid ให้ทำรายการได้ทันที
       document.getElementById('lobby-grid').classList.remove('opacity-20', 'pointer-events-none');
       
       document.getElementById('btn-role-buyer').className = role === 'buyer' ? 'border-2 border-[#0071e3] bg-[#0071e3]/10 p-4 rounded-lg flex flex-col items-center gap-2 transition-all' : 'border border-[#27272a] opacity-40 bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all';
       document.getElementById('btn-role-seller').className = role === 'seller' ? 'border-2 border-[#0071e3] bg-[#0071e3]/10 p-4 rounded-lg flex flex-col items-center gap-2 transition-all' : 'border border-[#27272a] opacity-40 bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all';
-    }
 
-    function generateAndPrepareRoom() {
-      let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      let code = '';
-      for (let i = 0; i < 6; i++) { code += chars.charAt(Math.floor(Math.random() * chars.length)); }
-      currentRoom = code;
-      
-      document.getElementById('btn-create').classList.add('hidden');
-      document.getElementById('generated-code').innerText = code;
-      document.getElementById('code-display').classList.remove('hidden');
-      document.getElementById('lobby-close-btn').classList.remove('hidden');
-
-      updateSidebarActiveRoom(code);
-      goToChatScreen(code);
-      listenToRoom(code, true);
+      // อัปเดตผูกห้องลงเมนู 3 ขีดและเปิดโหมดฟังเสียง Real-time รอทันทีที่ระบุบทบาทเสร็จ
+      updateSidebarActiveRoom(currentRoom);
+      listenToRoom(currentRoom, true);
     }
 
     function copyInviteLink() {
+      if(!myRole) { alert("⚠️ กรุณาเลือกบทบาท (ผู้ซื้อ หรือ ผู้ขาย) ก่อนกดคัดลอกลิงก์ครับ"); return; }
       const oppositeRole = myRole === 'seller' ? 'buyer' : 'seller';
       const inviteUrl = `${window.location.origin}${window.location.pathname}?room=${currentRoom}&role=${oppositeRole}`;
+      
       navigator.clipboard.writeText(inviteUrl).then(() => {
-        alert("🔗 คัดลอกลิงก์สำเร็จ! เมื่อส่งต่อให้อยีกฝ่ายกดเข้ามา ห้องแชทภารกิจจะเปิดทำงานให้ทันทีครับ");
+        alert(`🔗 คัดลอกลิงก์ดีลห้อง ${currentRoom} สำเร็จ! ส่งต่อให้อีกฝ่ายกดเข้ามาได้เลย ระบบจะพาท่านย้ายเข้าห้องแชทอัตโนมัติเมื่ออีกฝ่ายเปิดลิงก์ครับ`);
+        
+        // พาเจ้าของลิงก์เข้าหน้าแชทรอแบบ Standby สวยๆ
+        goToChatScreen(currentRoom);
       });
     }
 
