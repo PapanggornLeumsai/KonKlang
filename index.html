@@ -52,8 +52,8 @@
       <h1 class="text-3xl font-black text-white mb-1 tracking-wide">KONKLANG</h1>
       <p id="auth-title" class="text-xs text-[#a1a1aa] mb-6">เข้าสู่ระบบเพื่อใช้งานระบบซื้อขายออนไลน์</p>
       
-      <div id="invite-alert" class="hidden mb-4 p-2.5 rounded-lg text-xs bg-[#0071e3]/10 border border-[#0071e3]/30 text-[#0071e3] font-bold">
-        📥 ล็อกอินเพื่อเข้าร่วมห้องดีลอัตโนมัติค้างไว้
+      <div id="invite-alert" class="hidden mb-4 p-2.5 rounded-lg text-xs bg-[#0071e3]/10 border border-[#0071e3]/30 text-[#0071e3] font-bold animate-pulse">
+        📥 กรุณาล็อกอินบัญชีของคุณก่อน เพื่อเข้าร่วมห้องดีลโดยอัตโนมัติ
       </div>
 
       <div class="space-y-4 text-left mb-5">
@@ -167,7 +167,7 @@
             <div id="check-1" class="w-6 h-6 rounded-md font-bold flex items-center justify-center text-xs text-white bg-[#0071e3]">1</div>
             <div>
               <h4 class="text-xs font-bold text-white">ขั้นตอนที่ 1: ตั้งราคาและจับคู่ดีล</h4>
-              <p class="text-[11px] text-[#a1a1aa] mt-0.5">เชื่อมต่อผ่านรหัสของบัญชีจริงสำเร็จ</p>
+              <p class="text-[11px] text-[#a1a1aa] mt-0.5">เชื่อมต่อผ่านบัญชีจริงสำเร็จ</p>
             </div>
           </div>
           <div id="step-2" class="mission-step p-4 bg-[#09090b] border border-[#27272a] rounded-xl flex flex-col gap-3">
@@ -198,7 +198,7 @@
                 <h4 class="text-xs font-bold text-white">ขั้นตอนที่ 4: ผู้ซื้อตรวจสอบและยืนยันรับของ</h4>
                 <div id="buyer-confirm-zone" class="hidden mt-3 flex flex-col gap-2">
                   <button id="btn-confirm-1" onclick="confirmReceipt(1)" class="bg-[#ff9f0a] text-white px-4 py-2 rounded-md text-[11px] font-bold">⚠️ ตรวจสอบรหัสแล้ว (ยืนยันรอบที่ 1)</button>
-                  <button id="btn-confirm-2" onclick="hidden bg-[#30d5c8] text-black px-4 py-2 rounded-md text-[11px] font-black">✅ เปลี่ยนรหัสผ่านเรียบร้อย (ยืนยันรอบที่ 2)</button>
+                  <button id="btn-confirm-2" onclick="confirmReceipt(2)" class="hidden bg-[#30d5c8] text-black px-4 py-2 rounded-md text-[11px] font-black">✅ เปลี่ยนรหัสผ่านเรียบร้อย (ยืนยันรอบที่ 2)</button>
                 </div>
               </div>
             </div>
@@ -230,33 +230,32 @@
     let myUsername = "";
     let isRegisterMode = false;
 
-    // ระบบตรวจเช็คลิงก์และการล็อกอิน
+    // ระบบตรวจเช็คลิงก์เชิญและการเข้าสู่ระบบ
     window.onload = async function() {
-      // 1. เช็คพารามิเตอร์ลิงก์เชิญที่เพื่อนส่งมา
       const urlParams = new URLSearchParams(window.location.search);
       const inviteRoom = urlParams.get('room');
       const inviteRole = urlParams.get('role');
 
+      // หากกดเข้าผ่านลิงก์เชิญ ให้จดจำห้องไว้ชั่วคราวและแจ้งเตือนให้ล็อกอินก่อนเข้าห้องแชทจริง
       if (inviteRoom && inviteRole) {
-        // บันทึกเก็บค่าห้องดีลนี้ลงหน่วยความจำชั่วคราวของบราวเซอร์ก่อน
         localStorage.setItem('pendingRoom', inviteRoom);
         localStorage.setItem('pendingRole', inviteRole);
         document.getElementById('invite-alert').classList.remove('hidden');
       }
 
-      // 2. เช็ค Session เดิมในเครื่องจากฐานข้อมูลจริง
+      // เช็ค Session เดิมในเครื่องจากฐานข้อมูลจริง
       const { data: { session } } = await supabaseClient.auth.getSession();
       
       if (session) {
         myUsername = session.user.email.split('@')[0];
         showDashboardView(myUsername);
         
-        // ถ้าล็อกอินสำเร็จแล้ว และพบว่าเคยมีประวัติเปิดลิงก์เชิญห้องทิ้งไว้ ให้ข้ามไปเข้าห้องโดยอัตโนมัติทันที
+        // หากล็อกอินอยู่แล้ว ให้วาร์ปเข้าห้องดีลที่จดจำไว้ทันที
         checkAndRedirectToPendingRoom();
       }
     };
 
-    // ฟังก์ชันช่วยพาเข้าห้องดีลที่ค้างไว้หลังจากเจ้าตัวล็อกอินสำเร็จ (ไม่ใช่ Guest)
+    // ฟังก์ชันพาเข้าห้องดีลที่ค้างไว้หลังจากเจ้าตัวล็อกอินสำเร็จด้วยบัญชีจริง
     function checkAndRedirectToPendingRoom() {
       const savedRoom = localStorage.getItem('pendingRoom');
       const savedRole = localStorage.getItem('pendingRole');
@@ -268,11 +267,12 @@
 
         currentRoom = savedRoom;
         
-        // ล้างประวัติเพื่อไม่ให้เด้งซ้ำซ้อนรอบหน้า
+        // ล้างค่าหน่วยความจำชั่วคราวออกเพื่อป้องกันการเด้งซ้ำซ้อน
         localStorage.removeItem('pendingRoom');
         localStorage.removeItem('pendingRole');
+        document.getElementById('invite-alert').classList.add('hidden');
         
-        // ลบ Query Parameters บนหน้าแถบ URL เว็บบนเบราว์เซอร์ให้สะอาด
+        // เคลียร์ Query Parameters บนแถบ URL ของ Browser ให้สะอาดเป็นปกติ
         window.history.replaceState({}, document.title, window.location.pathname);
 
         listenToRoom(savedRoom, false);
@@ -306,7 +306,7 @@
       }
     }
 
-    // ฟังก์ชันเชื่อมโยงระบบ Auth เข้าฐานข้อมูลจริง Supabase
+    // ฟังก์ชันเชื่อมโยงระบบสมัครสมาชิก/เข้าสู่ระบบ คอนเน็กหาฐานข้อมูล Supabase Auth
     async function handleAuthSubmit() {
       const user = document.getElementById('login-username').value.trim();
       const pass = document.getElementById('login-password').value.trim();
@@ -317,11 +317,12 @@
         return;
       }
       if (pass.length < 6) {
-        alert("รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษรขึ้นไปบนตารางความปลอดภัยของระบบครับ");
+        alert("รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษรขึ้นไปตามเงื่อนไขความปลอดภัยครับ");
         return;
       }
 
-      const fakeEmail = `${user}@konklang.local`;
+      // ปรับเปลี่ยนนามสกุลอีเมลสมมติเป็นสากลระดับโลก (@konklang.com) แก้ไขเรื่อง invalid email
+      const fakeEmail = `${user}@konklang.com`;
 
       if (isRegisterMode) {
         if (pass !== confirmPass) {
@@ -338,7 +339,7 @@
           alert("ไม่สามารถลงทะเบียนได้: " + error.message);
           return;
         }
-        alert("🎉 สมัครสมาชิกบนบัญชีจริงสำเร็จ! ระบบกำลังพาล็อกอิน...");
+        alert("🎉 สมัครสมาชิกบนฐานข้อมูลบัญชีจริงสำเร็จ! กำลังเข้าสู่ระบบ...");
       } else {
         const { data, error } = await supabaseClient.auth.signInWithPassword({
           email: fakeEmail,
@@ -354,7 +355,7 @@
       myUsername = user;
       showDashboardView(user);
       
-      // หลังจากตรวจสอบสิทธิ์ผ่านแล้ว ให้มาเช็คต่อว่ามีคิวห้องที่เปิดค้างไว้จากลิงก์เชิญหรือไม่
+      // หลังจากตรวจสอบสิทธิ์ผ่านเรียบร้อย ให้รันการตรวจสอบลิงก์เข้าห้องทันที
       checkAndRedirectToPendingRoom();
     }
 
@@ -365,9 +366,9 @@
       location.reload(); 
     }
 
-    // ฟังก์ชันกดย้ายออกจากห้องแชท (Leave Room) พากลับมาหน้าควบคุมหลัก
+    // ฟังก์ชันกดย้ายตัวเองออกจากห้องดีลแชทกลาง กลับสู่หน้าหลักควบคุม
     function leaveRoom() {
-      if(confirm("คุณต้องการออกจากห้องซื้อขายกึ่งกลางนี้ใช่หรือไม่? (ความคืบหน้าจะคงอยู่บนเซิร์ฟเวอร์กลาง)")) {
+      if(confirm("คุณต้องการออกจากห้องซื้อขายกึ่งกลางนี้ใช่หรือไม่? (ความคืบหน้าของห้องดีลจะยังคงคงอยู่บนระบบ)")) {
         if (channel) {
           channel.unsubscribe();
           channel = null;
@@ -461,7 +462,7 @@
       const inviteUrl = `${window.location.origin}${window.location.pathname}?room=${currentRoom}&role=${oppositeRole}`;
       
       navigator.clipboard.writeText(inviteUrl).then(() => {
-        alert("🔗 คัดลอกลิงก์เชิญส่งดีลให้เพื่อนเรียบร้อยแล้ว! เมื่อเพื่อนคลิกลิงก์ระบบจะบังคับล็อกอินบัญชีหลักของเขาก่อนเข้าห้องดีลนี้");
+        alert("🔗 คัดลอกลิงก์เชิญส่งดีลให้เพื่อนเรียบร้อยแล้ว! เมื่อเพื่อนเปิดลิงก์ระบบจะบังคับให้ใช้บัญชีจริงล็อกอินก่อนเข้าห้องดีลนี้ทันที");
       }).catch(err => {
         alert("ไม่สามารถคัดลอกลิงก์ได้ กรุณาส่งรหัสห้อง 6 หลักให้แทนครับ: " + currentRoom);
       });
