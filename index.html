@@ -489,15 +489,6 @@
           updateSidebarActiveRoom(currentRoom);
           goToChatScreen(currentRoom);
           listenToRoom(currentRoom, false);
-          
-          setTimeout(() => {
-            renderChatHistory();
-            triggerFullRoomOpen(); 
-            updateMissionUI(currentStep); 
-            updateReadinessUI('buyer', buyerReady);
-            updateReadinessUI('seller', sellerReady);
-            if(dealNetPrice > 0) { renderPriceElements(dealNetPrice); }
-          }, 300);
         } else {
           checkAndRedirectToPendingRoom();
         }
@@ -673,7 +664,7 @@
 
       saveStateToLocalStorage();
       saveRoomToSidebar(code);
-      listenToRoom(code, true);
+      listenToRoom(code, true); // <== Start listening right away to let others join
     }
 
     function copyInviteLink() {
@@ -772,15 +763,6 @@
       goToChatScreen(code);
       listenToRoom(code, false);
       
-      setTimeout(() => {
-        renderChatHistory();
-        triggerFullRoomOpen();
-        updateMissionUI(currentStep);
-        updateReadinessUI('buyer', buyerReady);
-        updateReadinessUI('seller', sellerReady);
-        if(dealNetPrice > 0) renderPriceElements(dealNetPrice);
-      }, 300);
-      
       const sidebar = document.getElementById('sidebar');
       if (!sidebar.classList.contains('-translate-x-full')) { toggleSidebar(); }
     }
@@ -803,11 +785,41 @@
       channel = supabaseClient.channel(`room_${roomCode}`);
       channel
         .on('broadcast', { event: 'join_event' }, (response) => {
+          // If we are creator, we force role check by sending sync_presence with creatorRole
+          let payload = { role: myRole };
+          if (isCreator) payload.creatorRole = myRole;
+          
+          channel.send({ type: 'broadcast', event: 'sync_presence', payload: payload });
+          
           if (response.payload.role) { updatePresenceUI(response.payload.role, true); }
-          channel.send({ type: 'broadcast', event: 'sync_presence', payload: { role: myRole } });
         })
         .on('broadcast', { event: 'sync_presence' }, (response) => {
+          // Check for Role Collision
+          if (!isCreator && response.payload.creatorRole) {
+             const correctRole = response.payload.creatorRole === 'buyer' ? 'seller' : 'buyer';
+             if (myRole !== correctRole) {
+                const oldRole = myRole;
+                myRole = correctRole;
+                
+                localStorage.setItem('activeRoomRole', myRole);
+                saveStateToLocalStorage();
+                
+                document.getElementById('role-tag').innerText = myRole === 'buyer' ? 'ผู้ซื้อ 🛒' : 'ผู้ขาย 💰';
+                
+                updatePresenceUI(oldRole, false);
+                updatePresenceUI(myRole, true);
+                updateMissionUI(currentStep);
+                
+                systemNotice(`⚠️ ระบบสลับบทบาทของคุณเป็น [${myRole === 'buyer' ? 'ผู้ซื้อ 🛒' : 'ผู้ขาย 💰'}] อัตโนมัติ เพื่อไม่ให้ซ้ำกับผู้สร้างห้อง`);
+                
+                channel.send({ type: 'broadcast', event: 'role_corrected', payload: { newRole: myRole, oldRole: oldRole } });
+             }
+          }
           if (response.payload.role) { updatePresenceUI(response.payload.role, true); }
+        })
+        .on('broadcast', { event: 'role_corrected' }, (response) => {
+          updatePresenceUI(response.payload.oldRole, false);
+          updatePresenceUI(response.payload.newRole, true);
         })
         .on('broadcast', { event: 'step_update' }, (response) => {
           changeStep(response.payload.step, false); 
@@ -851,7 +863,7 @@
           updateMissionUI(7);
         })
         .on('broadcast', { event: 'room_closed_by_admin' }, () => {
-          alert("🔒 ห้องนี้ถูกยกเลิกหรือปิดตัวลงแล้ว ระบบจะพาคุณกลับสู่หน้าหลัก");
+          alert("🔒 ห้องนี้ถูกยกเลิกหรือปิดตัวลงแล้ว ระบบจะทำลายหลักฐานและพาคุณกลับสู่หน้าหลัก");
           executeRoomClear();
         })
         .on('broadcast', { event: 'msg_event' }, (response) => {
@@ -860,6 +872,7 @@
         .subscribe((status) => {
           if (status === 'SUBSCRIBED') {
             triggerFullRoomOpen(); 
+            // Announce presence 
             channel.send({ type: 'broadcast', event: 'join_event', payload: { role: myRole } });
           }
         });
