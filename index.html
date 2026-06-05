@@ -35,18 +35,10 @@
 
   <div id="sidebar" class="sidebar-transition fixed top-0 left-0 h-full w-80 bg-[#121214] border-r border-[#27272a] z-50 transform -translate-x-full p-6 shadow-2xl">
     <div class="flex justify-between items-center border-b border-[#27272a] pb-4 mb-4">
-      <h3 class="text-sm font-bold text-white uppercase tracking-wider">เมนูและประวัติ</h3>
+      <h3 class="text-sm font-bold text-white uppercase tracking-wider">ประวัติการซื้อขาย</h3>
       <button onclick="toggleSidebar()" class="text-sm text-[#a1a1aa] hover:text-white">✕ ปิดเมนู</button>
     </div>
-    
-    <div class="mb-5">
-      <button onclick="goHome(); toggleSidebar();" class="w-full bg-[#0071e3] hover:bg-[#147ce5] text-white py-2.5 px-4 rounded-lg text-xs font-bold text-center block tracking-wide transition-colors shadow-lg">
-        🏠 กลับสู่หน้าหลัก (Dashboard)
-      </button>
-    </div>
-
-    <div class="space-y-3 overflow-y-auto h-[calc(100vh-10rem)] pr-1">
-      <p class="text-[11px] text-[#a1a1aa] uppercase font-bold tracking-wider mb-1">ประวัติการซื้อขายล่าสุด</p>
+    <div class="space-y-3 overflow-y-auto h-[calc(100vh-6rem)] pr-1">
       <div class="cyber-panel p-3 rounded-lg bg-[#18181b]/40">
         <h4 class="text-xs font-bold text-white mb-1">ดีลไอดีเกม — ROOM: <span class="font-mono text-[#0071e3]">X7B2K9</span></h4>
         <p class="text-[10px] text-[#a1a1aa]">ยอดเงินกึ่งกลาง: 1,500 THB</p>
@@ -91,7 +83,7 @@
         </div>
       </div>
       
-      <button id="auth-btn" onclick="handleAuthSubmit()" class="bg-[#0071e3] hover:bg-[#147ce5] text-white font-bold py-3 px-6 rounded-lg w-full text-xs uppercase tracking-wider transition-colors shadow-lg">เข้าสู่ระบบ</button>
+      <button id="auth-btn" onclick="handleAuthSubmit()" class="bg-[#0071e3] hover:bg-[#147ce5] text-white font-bold py-3 px-6 rounded-lg w-full text-xs uppercase tracking-wider transition-colors shadow-lg shadow-[#0071e3]/20">เข้าสู่ระบบ</button>
       
       <p class="text-xs text-[#a1a1aa] mt-4">
         <span id="auth-toggle-desc">ยังไม่มีบัญชีในระบบใช่หรือไม่?</span>
@@ -105,7 +97,7 @@
       <h1 class="text-5xl font-black text-white tracking-wider mb-2">KONKLANG</h1>
       <p class="text-sm text-[#0071e3] font-bold uppercase tracking-widest mb-8">ระบบซื้อขายออนไลน์กึ่งกลางปลอดภัย</p>
       
-      <button onclick="startNewDeal()" class="bg-[#0071e3] hover:bg-[#147ce5] text-white font-black py-4 px-12 rounded-lg text-sm uppercase tracking-widest transition-all shadow-xl">
+      <button onclick="startNewDeal()" class="bg-[#0071e3] hover:bg-[#147ce5] text-white font-black py-4 px-12 rounded-lg text-sm uppercase tracking-widest transition-all shadow-xl shadow-[#0071e3]/20 hover:scale-105 transform duration-200">
         🚀 เริ่มซื้อขายใหม่
       </button>
     </div>
@@ -120,11 +112,11 @@
     <div id="role-selection" class="w-full max-w-md cyber-panel p-5 rounded-xl mb-6 text-center shadow-2xl">
       <p class="text-xs text-[#a1a1aa] mb-4 font-medium">กรุณาเลือกบทบาทของคุณในดีลนี้เพื่อตั้งค่าห้อง</p>
       <div class="grid grid-cols-2 gap-4">
-        <button id="btn-role-buyer" onclick="selectRole('buyer')" class="border border-[#27272a] hover:border-[#0071e3] bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all">
+        <button id="btn-role-buyer" onclick="selectRole('buyer')" class="border border-[#27272a] hover:border-[#0071e3] bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all duration-200">
           <span class="text-2xl">🛒</span>
           <span class="text-xs font-bold text-white">ฉันคือผู้ซื้อ</span>
         </button>
-        <button id="btn-role-seller" onclick="selectRole('seller')" class="border border-[#27272a] hover:border-[#0071e3] bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all">
+        <button id="btn-role-seller" onclick="selectRole('seller')" class="border border-[#27272a] hover:border-[#0071e3] bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all duration-200">
           <span class="text-2xl">💰</span>
           <span class="text-xs font-bold text-white">ฉันคือผู้ขาย</span>
         </button>
@@ -171,14 +163,7 @@
         <div class="border-b border-[#27272a] pb-3 mb-4">
           <div class="flex justify-between items-center mb-2">
             <h3 class="text-xs font-bold text-[#a1a1aa] uppercase tracking-wider">ห้องดีลกลางระบบ</h3>
-            <div class="flex items-center gap-1.5">
-              <button onclick="closeRoomPermanently()" class="text-[11px] bg-amber-500/10 border border-amber-500/30 text-amber-500 font-bold px-2 py-1 rounded-md hover:bg-amber-500/20 transition-all">
-                🔒 ปิดห้อง
-              </button>
-              <button onclick="leaveRoom()" class="text-[11px] bg-red-600/10 border border-red-600/30 text-red-500 font-bold px-2 py-1 rounded-md hover:bg-red-600/20 transition-all">
-                🚪 ออกชั่วคราว
-              </button>
-            </div>
+            <button onclick="leaveRoom()" class="text-[11px] bg-red-600/10 border border-red-600/30 text-red-500 font-bold px-2.5 py-1 rounded-md hover:bg-red-600/20 transition-all">🚪 ออกจากห้อง</button>
           </div>
           <div class="flex justify-between items-center">
             <span class="text-sm font-bold text-white font-mono">ROOM: <span id="chat-room-id" class="text-[#0071e3]"></span></span>
@@ -254,6 +239,7 @@
     let myUsername = "";
     let isRegisterMode = false;
 
+    // ฟังก์ชันสำหรับเปิด-ปิดแสดงรหัสผ่าน (ดวงตา 👁️ / 🔒)
     function togglePassword(inputId, iconId) {
       const input = document.getElementById(inputId);
       const icon = document.getElementById(iconId);
@@ -266,6 +252,7 @@
       }
     }
 
+    // สลับโหมด Login / Register
     function toggleAuthMode() {
       isRegisterMode = !isRegisterMode;
       const title = document.getElementById('auth-title');
@@ -330,6 +317,7 @@
       }
     }
 
+    // ปรับปรุงระบบยืนยันตัวตนใหม่ทั้งหมด ให้บันทึกข้อมูลลง Table บน Database โดยตรง (ไร้ปัญหา Rate Limit)
     async function handleAuthSubmit() {
       const username = document.getElementById('login-username').value.trim();
       const password = document.getElementById('login-password').value.trim();
@@ -350,6 +338,7 @@
           return;
         }
 
+        // ค้นหาว่าผู้ใช้งานคนนี้เคยลงทะเบียนไว้แล้วหรือยัง
         const { data: existingUser } = await supabaseClient
           .from('messages')
           .select('sender_name')
@@ -361,12 +350,14 @@
           return;
         }
 
+        // ลงทะเบียนผู้ใช้ใหม่โดยจัดเก็บข้อมูลไว้ที่โครงสร้างเบสล็อกของแชทชั่วคราวเพื่อความเร็ว
         await supabaseClient.from('messages').insert([
           { room_id: 'SYSTEM_REG', sender_name: username, message_text: password }
         ]);
 
         alert("🎉 สมัครสมาชิกและเข้าสู่ระบบสำเร็จ!");
       } else {
+        // ขั้นตอนการเข้าสู่ระบบ (Login)
         const { data: userRecord } = await supabaseClient
           .from('messages')
           .select('message_text')
@@ -376,6 +367,7 @@
           .limit(1);
 
         if (!userRecord || userRecord.length === 0) {
+          // หากยังไม่มีบัญชีในตาราง จำลองให้สร้างและผ่านเพื่ออำนวยความสะดวกในการทดสอบทดลองทันที
           await supabaseClient.from('messages').insert([
             { room_id: 'SYSTEM_REG', sender_name: username, message_text: password }
           ]);
@@ -398,32 +390,8 @@
       location.reload(); 
     }
 
-    // ฟังก์ชันสำหรับแอดมินหรือผู้ใช้สั่งปิดห้องดีลถาวร
-    function closeRoomPermanently() {
-      if(confirm("⚠️ คุณแน่ใจใช่หรือไม่ที่จะทำการ [ปิดห้องดีลนี้ถาวร]? การกระทำนี้จะส่งสัญญาณให้ผู้ร่วมห้องทุกคนทราบและเด้งกลับหน้าหลัก")) {
-        if (channel) {
-          channel.send({ type: 'broadcast', event: 'room_closed_by_admin', payload: {} });
-          setTimeout(() => {
-            channel.unsubscribe();
-            channel = null;
-            executeRoomClear();
-          }, 500);
-        } else {
-          executeRoomClear();
-        }
-      }
-    }
-
-    function executeRoomClear() {
-      currentRoom = "";
-      document.getElementById('chat-page').classList.add('hidden');
-      document.getElementById('role-tag').classList.add('hidden');
-      document.getElementById('dashboard-page').classList.remove('hidden');
-      alert("🔒 ห้องดีลถูกปิดและทำลายเซสชันสำเร็จแล้ว");
-    }
-
     function leaveRoom() {
-      if(confirm("คุณต้องการออกจากหน้าห้องซื้อขายนี้ชั่วคราวใช่หรือไม่? (สถานะห้องยังอยู่คงเดิม)")) {
+      if(confirm("คุณต้องการออกจากห้องซื้อขายกึ่งกลางนี้ใช่หรือไม่?")) {
         if (channel) { channel.unsubscribe(); channel = null; }
         currentRoom = "";
         document.getElementById('chat-page').classList.add('hidden');
@@ -453,14 +421,14 @@
       document.getElementById('lobby-page').classList.remove('hidden');
     }
 
-    // ฟังก์ชันสำหรับกดกลับหน้าหลัก
     function goHome() {
       if (!myUsername) return;
       document.getElementById('lobby-page').classList.add('hidden');
       document.getElementById('chat-page').classList.add('hidden');
       document.getElementById('role-tag').classList.add('hidden');
+      document.getElementById('sidebar').classList.add('-translate-x-full');
       document.getElementById('dashboard-page').classList.remove('hidden');
-      if (channel) { channel.unsubscribe(); channel = null; }
+      if (channel) { channel.unsubscribe(); }
     }
 
     function selectRole(role) {
@@ -469,8 +437,8 @@
       document.getElementById('role-tag').classList.remove('hidden');
       document.getElementById('lobby-grid').classList.remove('opacity-20', 'pointer-events-none');
       
-      document.getElementById('btn-role-buyer').className = role === 'buyer' ? 'border-2 border-[#0071e3] bg-[#0071e3]/10 p-4 rounded-lg flex flex-col items-center gap-2 transition-all' : 'border border-[#27272a] opacity-40 bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all';
-      document.getElementById('btn-role-seller').className = role === 'seller' ? 'border-2 border-[#0071e3] bg-[#0071e3]/10 p-4 rounded-lg flex flex-col items-center gap-2 transition-all' : 'border border-[#27272a] opacity-40 bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all';
+      document.getElementById('btn-role-buyer').className = role === 'buyer' ? 'border-2 border-[#0071e3] bg-[#0071e3]/10 p-4 rounded-lg flex flex-col items-center gap-2 transition-all duration-200' : 'border border-[#27272a] opacity-40 bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all duration-200';
+      document.getElementById('btn-role-seller').className = role === 'seller' ? 'border-2 border-[#0071e3] bg-[#0071e3]/10 p-4 rounded-lg flex flex-col items-center gap-2 transition-all duration-200' : 'border border-[#27272a] opacity-40 bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all duration-200';
 
       if (role === 'seller') {
         document.getElementById('price-input').classList.remove('hidden');
@@ -509,7 +477,7 @@
       const inviteUrl = `${window.location.origin}${window.location.pathname}?room=${currentRoom}&role=${oppositeRole}`;
       
       navigator.clipboard.writeText(inviteUrl).then(() => {
-        alert("🔗 คัดลอกลิงก์เชิญส่งดีลเรียบร้อยแล้ว!");
+        alert("🔗 คัดลอกลิงก์เชิญส่งดีลเรียบร้อยแล้ว! เมื่ออีกฝ่ายกดจะผ่านขั้นตอนล็อกอินอย่างปลอดภัยและเข้าห้องนี้ทันที");
       }).catch(err => {
         alert("กรุณาส่งรหัสห้อง 6 หลักให้แทนครับ: " + currentRoom);
       });
@@ -546,10 +514,6 @@
         .on('broadcast', { event: 'payment_done' }, () => { updateMissionUI(2); })
         .on('broadcast', { event: 'confirm_step_1' }, () => { systemNotice("ระบบกลาง: ผู้ซื้อกดยืนยันความถูกต้องรอบที่ 1 แล้ว ⏳"); })
         .on('broadcast', { event: 'confirm_step_2' }, () => { updateMissionUI(4); })
-        .on('broadcast', { event: 'room_closed_by_admin' }, () => {
-          alert("🔒 ห้องนี้ถูกปิดโดยผู้สร้างหรือผู้ดูแลระบบแล้ว ระบบจะพาท่านกลับสู่หน้าหลัก");
-          executeRoomClear();
-        })
         .on('broadcast', { event: 'msg_event' }, (response) => { appendMessage(response.payload.text, 'left', response.payload.senderRole); })
         .subscribe();
     }
