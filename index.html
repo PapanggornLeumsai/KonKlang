@@ -169,12 +169,12 @@
 
         <div id="ready-status-box" class="mb-4 p-4 bg-[#18181b] border border-[#27272a] rounded-xl flex flex-col gap-3">
           <h4 class="text-xs font-bold text-white uppercase tracking-wider">🤝 ระบบยืนยันตัวตนและความพร้อม</h4>
-          <p class="text-[11px] text-[#a1a1aa]">กรุณากดปุ่มเพื่อยืนยันว่าพร้อมทำรายการซื้อขาย หากกดพร้อมกันทั้งสองคน ห้องซื้อขายจะปลดล็อคทันที</p>
+          <p class="text-[11px] text-[#a1a1aa]">กรุณากดปุ่มสีส้มด้านล่างเพื่อยืนยันว่าพร้อมทำรายการซื้อขาย หากกดพร้อมกันทั้งสองคน ห้องแชทและขั้นตอนดีลจะปลดล็อคทันที</p>
           <div class="grid grid-cols-2 gap-2 text-center text-[11px] font-bold">
             <div id="status-badge-buyer" class="bg-red-500/10 border border-red-500/20 text-red-400 py-1 rounded">ผู้ซื้อ: ยังไม่พร้อม ❌</div>
             <div id="status-badge-seller" class="bg-red-500/10 border border-red-500/20 text-red-400 py-1 rounded">ผู้ขาย: ยังไม่พร้อม ❌</div>
           </div>
-          <button id="btn-toggle-ready" onclick="clickReadyToggle()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-black py-2 rounded-lg text-xs tracking-wide transition-all shadow-md">
+          <button id="btn-toggle-ready" onclick="clickReadyToggle()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-black py-2.5 rounded-lg text-xs tracking-wide transition-all shadow-md">
             ✋ กดปุ่มยืนยันความพร้อมฝั่งฉัน
           </button>
         </div>
@@ -184,7 +184,7 @@
             <div class="flex items-start gap-3">
               <div id="check-1" class="w-6 h-6 rounded-md font-bold border border-[#27272a] flex items-center justify-center text-xs text-[#a1a1aa] bg-[#18181b]">1</div>
               <div class="flex-1">
-                <h4 class="text-xs font-bold text-white">ขั้นตอนที่ 1: 定หนดข้อตกลงราคากลาง</h4>
+                <h4 class="text-xs font-bold text-white">ขั้นตอนที่ 1: กำหนดข้อตกลงราคากลาง</h4>
                 <div id="seller-price-zone" class="hidden mt-3 p-3 bg-[#121214] border border-[#27272a] rounded-lg">
                   <p class="text-[11px] text-[#a1a1aa] mb-2 font-bold uppercase">💰 ระบุราคาสินค้าที่ตกลงไว้ (บาท)</p>
                   <div class="flex gap-2">
@@ -449,7 +449,6 @@
     }
 
     function leaveRoom() {
-      // เอาเงื่อนไขดักแจ้งเตือนล็อคของ leaveRoom ออก เพื่อให้กดสลับหน้าต่างพับจอกากบาทได้อิสระตลอดเวลา
       document.getElementById('chat-page').classList.add('hidden');
       document.getElementById('dashboard-page').classList.remove('hidden');
     }
@@ -507,7 +506,7 @@
       document.getElementById('buyer-price-zone').classList.add('hidden');
       
       document.getElementById('close-room-btn').classList.remove('hidden');
-      document.getElementById('leave-room-btn').classList.remove('hidden'); // กากบาทแสดงตลอด
+      document.getElementById('leave-room-btn').classList.remove('hidden');
       document.getElementById('copy-link-zone').classList.remove('hidden');
       document.getElementById('ready-status-box').classList.remove('hidden');
     }
@@ -593,6 +592,9 @@
       document.getElementById('lobby-page').classList.add('hidden');
       document.getElementById('chat-page').classList.remove('hidden');
       document.getElementById('chat-room-id').innerText = code;
+      
+      // บังคับแสดงกล่องและปุ่มยืนยันความพร้อมทันทีเมื่อเปิดหน้าจอ
+      document.getElementById('ready-status-box').classList.remove('hidden');
       updateReadyUI();
     }
 
@@ -677,10 +679,10 @@
 
       const myCurrentReadyState = (myRole === 'buyer') ? state.buyerReady : state.sellerReady;
       if (myCurrentReadyState) {
-        rBtn.className = "w-full bg-[#30d5c8] text-black font-black py-2 rounded-lg text-xs tracking-wide transition-all shadow-md";
+        rBtn.className = "w-full bg-[#30d5c8] text-black font-black py-2.5 rounded-lg text-xs tracking-wide transition-all shadow-md";
         rBtn.innerText = "✓ คุณกดยืนยันความพร้อมเรียบร้อยแล้ว";
       } else {
-        rBtn.className = "w-full bg-amber-500 hover:bg-amber-600 text-black font-black py-2 rounded-lg text-xs tracking-wide transition-all shadow-md";
+        rBtn.className = "w-full bg-amber-500 hover:bg-amber-600 text-black font-black py-2.5 rounded-lg text-xs tracking-wide transition-all shadow-md";
         rBtn.innerText = "✋ กดปุ่มยืนยันความพร้อมฝั่งฉัน";
       }
     }
@@ -792,7 +794,7 @@
       
       document.getElementById('mission-timeline').classList.remove('opacity-40', 'pointer-events-none');
       
-      // ซ่อนเฉพาะปุ่ม "ปิดดีลถาวร" ส่วนปุ่ม "กากบาท" (leave-room-btn) จะไม่ถูกสั่งให้ .add('hidden') เพื่อให้แสดงตลอดเวลา
+      // ซ่อนปุ่มปิดดีลถาวรตามที่ระบุไว้ / ปุ่มกากบาทแสดงไว้ปกติ
       document.getElementById('close-room-btn').classList.add('hidden');
       document.getElementById('copy-link-zone').classList.add('hidden');
       document.getElementById('ready-status-box').classList.add('hidden');
