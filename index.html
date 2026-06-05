@@ -147,7 +147,7 @@
           </div>
           <p class="text-[11px] text-[#ff9f0a] font-medium animate-pulse mt-1">⏳ รอคู่ค้ากดลิงก์เชื่อมต่อเข้ามา เพื่อเริ่มภารกิจแชท...</p>
           <div class="border-t border-[#27272a] pt-2 mt-1">
-            <button onclick="copyInviteLink()" class="w-full bg-[#18181b] border border-[#27272a] hover:border-[#0071e3] text-white py-1.5 rounded-md text-[11px] font-bold flex items-center justify-center gap-1 transition-all">
+            <button onclick="copyInviteLink()" class="w-full bg-[#0071e3] hover:bg-[#147ce5] text-white py-2 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md">
               🔗 คัดลอกลิงก์เชิญอัตโนมัติ
             </button>
           </div>
@@ -255,7 +255,7 @@
     let myRole = ""; 
     let myUsername = "";
     let isRegisterMode = false;
-    let isRoomFullyOpened = false; // เอาไว้เช็กว่าสองฝั่งเจอกันหรือยัง
+    let isRoomFullyOpened = false;
 
     function togglePassword(inputId, iconId) {
       const input = document.getElementById(inputId);
@@ -321,7 +321,6 @@
         document.getElementById('invite-alert').classList.add('hidden');
         window.history.replaceState({}, document.title, window.location.pathname);
 
-        // ฝั่งคนจอยจากลิงก์: อัปเดตและเข้าไปรอเชื่อมต่อในแชททันที
         updateSidebarActiveRoom(savedRoom);
         goToChatScreen(savedRoom);
         listenToRoom(savedRoom, false);
@@ -416,7 +415,6 @@
       document.getElementById('dashboard-page').classList.add('hidden');
       document.getElementById('sidebar').classList.add('-translate-x-full');
       
-      // Reset หน้า lobby เผื่อมากดซ้ำ
       document.getElementById('btn-create').classList.remove('hidden');
       document.getElementById('code-display').classList.add('hidden');
       document.getElementById('lobby-close-btn').classList.add('hidden');
@@ -442,7 +440,6 @@
       document.getElementById('btn-role-seller').className = role === 'seller' ? 'border-2 border-[#0071e3] bg-[#0071e3]/10 p-4 rounded-lg flex flex-col items-center gap-2 transition-all' : 'border border-[#27272a] opacity-40 bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all';
     }
 
-    // ฟังก์ชันสร้างรหัสห้องดีลแบบไม่ต้องกรอกราคา (ทั้งผู้ซื้อ/ผู้ขายกดใช้ปุ่มนี้เพื่อเปิดห้องได้หมด)
     function generateAndPrepareRoom() {
       let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
       let code = '';
@@ -452,14 +449,9 @@
       document.getElementById('btn-create').classList.add('hidden');
       document.getElementById('generated-code').innerText = code;
       document.getElementById('code-display').classList.remove('hidden');
-      
-      // ✅ แสดงผลปุ่มกากบาท ✕ ประจำหน้า Lobby ให้ปิดกลับแดชบอร์ดได้
       document.getElementById('lobby-close-btn').classList.remove('hidden');
 
-      // ✅ อัปเดตผูกมัดห้องนี้ลงสู่ Sidebar แถบเมนู 3 ขีดทันทีก่อนการเชื่อมต่อสมบูรณ์
       updateSidebarActiveRoom(code);
-
-      // เปิดหน้าจอแชทเพื่อเข้าสู่โหมด Standby รอกลางอากาศ
       goToChatScreen(code);
       listenToRoom(code, true);
     }
@@ -468,7 +460,7 @@
       const oppositeRole = myRole === 'seller' ? 'buyer' : 'seller';
       const inviteUrl = `${window.location.origin}${window.location.pathname}?room=${currentRoom}&role=${oppositeRole}`;
       navigator.clipboard.writeText(inviteUrl).then(() => {
-        alert("🔗 คัดลอกลิงก์สำเร็จ! เมื่อส่งต่อให้อีกฝ่ายกดเข้ามา ห้องแชทภารกิจจะเปิดทำงานให้ทันทีครับ");
+        alert("🔗 คัดลอกลิงก์สำเร็จ! เมื่อส่งต่อให้อยีกฝ่ายกดเข้ามา ห้องแชทภารกิจจะเปิดทำงานให้ทันทีครับ");
       });
     }
 
@@ -490,7 +482,6 @@
       document.getElementById('chat-room-id').innerText = code;
     }
 
-    // ฟังก์ชันจัดการเพิ่มข้อมูลห้องดีลจริงขึ้นบน Sidebar เมนู 3 ขีด
     function updateSidebarActiveRoom(code) {
       const sidebarContainer = document.getElementById('sidebar-room-list');
       sidebarContainer.innerHTML = `
@@ -527,17 +518,14 @@
         .on('broadcast', { event: 'msg_event' }, (response) => { appendMessage(response.payload.text, 'left', response.payload.senderRole); })
         .subscribe((status) => {
           if (status === 'SUBSCRIBED' && !isCreator) {
-            // ดันสัญญาณแจ้งฝั่งผู้สร้างว่าตนเองเข้าเชื่อมต่อแล้ว
             channel.send({ type: 'broadcast', event: 'join_event', payload: { role: myRole } });
           }
         });
     }
 
-    // ฟังก์ชันทำงานปลดล็อกห้องซื้อขายอย่างเต็มรูปแบบเมื่อคู่ค้าเข้ามาพบกัน
     function triggerFullRoomOpen() {
       isRoomFullyOpened = true;
       
-      // 1. ปลดล็อกและเปิดใช้งานช่องแชทและปุ่มส่ง
       document.getElementById('chat-input').disabled = false;
       document.getElementById('chat-input').placeholder = "พิมพ์ข้อความเจรจา หรือระบุข้อตกลงราคาที่นี่ได้เลย...";
       document.getElementById('chat-input').className = "flex-1 bg-[#09090b] border border-[#27272a] rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#0071e3]";
@@ -545,17 +533,14 @@
       document.getElementById('chat-send-btn').disabled = false;
       document.getElementById('chat-send-btn').className = "bg-[#0071e3] text-white px-6 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-[#147ce5] transition-colors";
       
-      // 2. ปลดล็อกไทม์ไลน์ภารกิจให้เห็นเด่นชัด
       document.getElementById('mission-timeline').classList.remove('opacity-40', 'pointer-events-none');
       
-      // 3. แจ้งเตือนสมานฉันท์สำเร็จในระบบ
       const waitNotice = document.getElementById('lobby-wait-notice');
       if(waitNotice) {
         waitNotice.className = "bg-[#30d5c8]/10 text-[#30d5c8] text-[11px] px-4 py-2 rounded-md border border-[#30d5c8]/30 animate-none";
         waitNotice.innerText = "✅ ห้องซื้อขายเปิดทำงานสำเร็จ! อีกฝ่ายได้เข้าร่วมห้องดีลเรียบร้อยแล้ว";
       }
 
-      // 4. เปลี่ยน Badge ใน Sidebar ให้เป็น ดำเนินรายการ
       const sideBadge = document.getElementById('sidebar-status-badge');
       if (sideBadge) {
         sideBadge.className = "text-[10px] font-bold text-[#30d5c8] bg-[#30d5c8]/10 px-1.5 py-0.5 rounded mt-1 inline-block";
