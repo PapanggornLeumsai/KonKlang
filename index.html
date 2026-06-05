@@ -115,12 +115,12 @@
   <div id="lobby-page" class="hidden min-h-screen flex flex-col items-center justify-center pt-16 px-4">
     <div class="text-center mb-6 max-w-xl relative w-full">
       <h1 class="text-3xl font-black text-white tracking-tight mb-2">KONKLANG</h1>
-      <p class="text-sm text-[#0071e3] font-semibold uppercase">เลือกบทบาทและสร้างห้องหรือเข้าร่วมดีล</p>
+      <p class="text-sm text-[#0071e3] font-semibold uppercase">สร้างห้องใหม่ หรือเข้าร่วมดีลที่มีอยู่แล้ว</p>
       <button onclick="goHome()" class="absolute top-0 right-4 text-xl text-[#a1a1aa] hover:text-white p-1">✕</button>
     </div>
 
     <div id="role-selection" class="w-full max-w-md cyber-panel p-5 rounded-xl mb-6 text-center shadow-2xl">
-      <p class="text-xs text-[#a1a1aa] mb-4 font-medium">กรุณาเลือกบทบาทของคุณในปัจจุบัน</p>
+      <p class="text-xs text-[#a1a1aa] mb-4 font-medium">หากต้องการสร้างห้องใหม่ กรุณาเลือกบทบาทของคุณ</p>
       <div class="grid grid-cols-2 gap-4">
         <button id="btn-role-buyer" onclick="selectRole('buyer')" class="border border-[#27272a] hover:border-[#0071e3] bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all">
           <span class="text-2xl">🛒</span>
@@ -133,13 +133,13 @@
       </div>
     </div>
 
-    <div id="lobby-grid" class="opacity-20 pointer-events-none grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl transition-all duration-300">
+    <div id="lobby-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl transition-all duration-300">
       
       <div id="create-box" class="cyber-panel p-5 rounded-xl text-center flex flex-col justify-between min-h-[230px] shadow-2xl relative">
         <button id="lobby-close-btn" onclick="goHome()" class="hidden absolute top-3 right-4 text-lg font-bold text-[#a1a1aa] hover:text-white transition-all">✕</button>
         <div>
           <h2 class="text-sm font-bold text-white mb-1">เริ่มต้นสร้างดีลใหม่</h2>
-          <p class="text-[11px] text-[#a1a1aa] mb-4">กดปุ่มด้านล่างเพื่อรับรหัสเข้าห้องและคัดลอกลิงก์ส่งต่อ</p>
+          <p class="text-[11px] text-[#a1a1aa] mb-4">กรุณาเลือกบทบาทด้านบน แล้วกดสร้างห้อง</p>
         </div>
         
         <div id="code-display" class="hidden my-2 p-3 bg-[#09090b] rounded-lg border border-[#27272a] cyber-glow flex flex-col gap-2">
@@ -163,7 +163,7 @@
       <div id="join-box" class="cyber-panel p-5 rounded-xl text-center flex flex-col justify-between min-h-[230px] shadow-2xl">
         <div>
           <h2 class="text-sm font-bold text-white mb-1">เข้าร่วมห้องที่มีอยู่</h2>
-          <p class="text-[11px] text-[#a1a1aa] mb-4">กรอกรหัสผ่าน 6 หลักที่ได้จากคู่ค้าเพื่อล็อกอินเข้าทำรายการ</p>
+          <p class="text-[11px] text-[#a1a1aa] mb-4">กรอกรหัส 6 หลัก (ไม่ต้องเลือกบทบาท ระบบจะจัดการให้อัตโนมัติ)</p>
         </div>
         <div>
           <input id="room-input" type="text" maxlength="6" placeholder="รหัสห้อง 6 หลัก" class="bg-[#09090b] border border-[#27272a] rounded-lg p-2.5 w-full text-center font-mono text-lg uppercase tracking-widest text-white font-bold focus:outline-none focus:border-[#0071e3]">
@@ -489,6 +489,15 @@
           updateSidebarActiveRoom(currentRoom);
           goToChatScreen(currentRoom);
           listenToRoom(currentRoom, false);
+          
+          setTimeout(() => {
+            renderChatHistory();
+            triggerFullRoomOpen(); 
+            updateMissionUI(currentStep); 
+            updateReadinessUI('buyer', buyerReady);
+            updateReadinessUI('seller', sellerReady);
+            if(dealNetPrice > 0) { renderPriceElements(dealNetPrice); }
+          }, 300);
         } else {
           checkAndRedirectToPendingRoom();
         }
@@ -580,6 +589,7 @@
       localStorage.removeItem('activeRoomCode');
       localStorage.removeItem('activeRoomRole');
       currentRoom = "";
+      myRole = "";
       resetRoomUIAndState();
       document.getElementById('chat-page').classList.add('hidden');
       document.getElementById('role-tag').classList.add('hidden');
@@ -619,6 +629,7 @@
     function startNewDeal() {
       resetRoomUIAndState();
       currentRoom = "";
+      myRole = ""; // Clear selected role for new setup
       
       document.getElementById('dashboard-page').classList.add('hidden');
       document.getElementById('sidebar').classList.add('-translate-x-full');
@@ -628,6 +639,11 @@
       document.getElementById('lobby-close-btn').classList.add('hidden');
       document.getElementById('room-input').value = "";
       
+      // Reset Role Buttons UI
+      document.getElementById('btn-role-buyer').className = 'border border-[#27272a] hover:border-[#0071e3] bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all';
+      document.getElementById('btn-role-seller').className = 'border border-[#27272a] hover:border-[#0071e3] bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all';
+      document.getElementById('role-tag').classList.add('hidden');
+
       document.getElementById('lobby-page').classList.remove('hidden');
     }
 
@@ -643,13 +659,17 @@
       myRole = role;
       document.getElementById('role-tag').innerText = role === 'buyer' ? 'ผู้ซื้อ 🛒' : 'ผู้ขาย 💰';
       document.getElementById('role-tag').classList.remove('hidden');
-      document.getElementById('lobby-grid').classList.remove('opacity-20', 'pointer-events-none');
       
       document.getElementById('btn-role-buyer').className = role === 'buyer' ? 'border-2 border-[#0071e3] bg-[#0071e3]/10 p-4 rounded-lg flex flex-col items-center gap-2 transition-all' : 'border border-[#27272a] opacity-40 bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all';
       document.getElementById('btn-role-seller').className = role === 'seller' ? 'border-2 border-[#0071e3] bg-[#0071e3]/10 p-4 rounded-lg flex flex-col items-center gap-2 transition-all' : 'border border-[#27272a] opacity-40 bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all';
     }
 
     function generateAndPrepareRoom() {
+      if(!myRole) {
+        alert("กรุณาเลือกบทบาทของคุณ (ผู้ซื้อ หรือ ผู้ขาย) ก่อนสร้างห้องใหม่ครับ");
+        return;
+      }
+      
       resetRoomUIAndState();
       
       let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -664,11 +684,13 @@
 
       saveStateToLocalStorage();
       saveRoomToSidebar(code);
-      listenToRoom(code, true); // <== Start listening right away to let others join
+      listenToRoom(code, true);
     }
 
     function copyInviteLink() {
-      const oppositeRole = myRole === 'seller' ? 'buyer' : 'seller';
+      // If we don't have a role somehow (e.g. joined via code but haven't synced), default to something
+      let activeRoleForLink = myRole || 'buyer'; 
+      const oppositeRole = activeRoleForLink === 'seller' ? 'buyer' : 'seller';
       const inviteUrl = `${window.location.origin}${window.location.pathname}?room=${currentRoom}&role=${oppositeRole}`;
       navigator.clipboard.writeText(inviteUrl).then(() => {
         alert("🔗 คัดลอกลิงก์เรียบร้อย! สามารถนำไปส่งต่อให้คู่ค้าได้เลยครับ");
@@ -681,6 +703,7 @@
         resetRoomUIAndState();
         currentRoom = code;
         
+        // Let the system auto-assign role when joining if they didn't select one
         if(!loadStateFromLocalStorage(code)) {
            currentStep = 1; buyerReady = false; sellerReady = false; dealNetPrice = 0; isPriceAccepted = false; chatHistory = [];
         }
@@ -700,7 +723,7 @@
       document.getElementById('chat-page').classList.remove('hidden');
       document.getElementById('chat-room-id').innerText = code;
       localStorage.setItem('activeRoomCode', code);
-      localStorage.setItem('activeRoomRole', myRole);
+      if(myRole) localStorage.setItem('activeRoomRole', myRole);
       
       updatePresenceUI('buyer', false);
       updatePresenceUI('seller', false);
@@ -763,6 +786,15 @@
       goToChatScreen(code);
       listenToRoom(code, false);
       
+      setTimeout(() => {
+        renderChatHistory();
+        triggerFullRoomOpen();
+        updateMissionUI(currentStep);
+        updateReadinessUI('buyer', buyerReady);
+        updateReadinessUI('seller', sellerReady);
+        if(dealNetPrice > 0) renderPriceElements(dealNetPrice);
+      }, 300);
+      
       const sidebar = document.getElementById('sidebar');
       if (!sidebar.classList.contains('-translate-x-full')) { toggleSidebar(); }
     }
@@ -794,7 +826,7 @@
           if (response.payload.role) { updatePresenceUI(response.payload.role, true); }
         })
         .on('broadcast', { event: 'sync_presence' }, (response) => {
-          // Check for Role Collision
+          // AUTO-ASSIGN OR FIX ROLE COLLISION
           if (!isCreator && response.payload.creatorRole) {
              const correctRole = response.payload.creatorRole === 'buyer' ? 'seller' : 'buyer';
              if (myRole !== correctRole) {
@@ -805,12 +837,17 @@
                 saveStateToLocalStorage();
                 
                 document.getElementById('role-tag').innerText = myRole === 'buyer' ? 'ผู้ซื้อ 🛒' : 'ผู้ขาย 💰';
+                document.getElementById('role-tag').classList.remove('hidden');
                 
-                updatePresenceUI(oldRole, false);
+                if (oldRole) updatePresenceUI(oldRole, false);
                 updatePresenceUI(myRole, true);
                 updateMissionUI(currentStep);
                 
-                systemNotice(`⚠️ ระบบสลับบทบาทของคุณเป็น [${myRole === 'buyer' ? 'ผู้ซื้อ 🛒' : 'ผู้ขาย 💰'}] อัตโนมัติ เพื่อไม่ให้ซ้ำกับผู้สร้างห้อง`);
+                if (oldRole) {
+                   systemNotice(`⚠️ ระบบสลับบทบาทของคุณเป็น [${myRole === 'buyer' ? 'ผู้ซื้อ 🛒' : 'ผู้ขาย 💰'}] อัตโนมัติ เพื่อไม่ให้ซ้ำกับผู้สร้างห้อง`);
+                } else {
+                   systemNotice(`✅ ระบบตรวจสอบข้อมูลห้อง และกำหนดให้คุณเป็น [${myRole === 'buyer' ? 'ผู้ซื้อ 🛒' : 'ผู้ขาย 💰'}] อัตโนมัติ`);
+                }
                 
                 channel.send({ type: 'broadcast', event: 'role_corrected', payload: { newRole: myRole, oldRole: oldRole } });
              }
@@ -818,7 +855,7 @@
           if (response.payload.role) { updatePresenceUI(response.payload.role, true); }
         })
         .on('broadcast', { event: 'role_corrected' }, (response) => {
-          updatePresenceUI(response.payload.oldRole, false);
+          if (response.payload.oldRole) updatePresenceUI(response.payload.oldRole, false);
           updatePresenceUI(response.payload.newRole, true);
         })
         .on('broadcast', { event: 'step_update' }, (response) => {
@@ -892,7 +929,12 @@
       
       if(chatHistory.length === 0) { renderChatHistory(); }
       
-      updatePresenceUI(myRole, true);
+      if(myRole) {
+          updatePresenceUI(myRole, true);
+          const oppositeRole = myRole === 'seller' ? 'buyer' : 'seller';
+          updatePresenceUI(oppositeRole, true);
+      }
+      
       updateMissionUI(currentStep);
       updateReadinessUI('buyer', buyerReady);
       updateReadinessUI('seller', sellerReady);
@@ -908,6 +950,7 @@
     }
 
     function toggleMyReadiness() {
+      if(!myRole) { alert("กำลังซิงค์บทบาทกับห้อง กรุณารอสักครู่..."); return; }
       if(myRole === 'buyer') {
         buyerReady = !buyerReady;
         updateReadinessUI('buyer', buyerReady);
@@ -1129,6 +1172,7 @@
       let input = document.getElementById('chat-input');
       let text = input.value.trim();
       if (!text) return;
+      if (!myRole) { alert("กำลังซิงค์บทบาทกับห้อง กรุณารอสักครู่..."); return; }
       
       const msgObj = { type: 'msg', text: text, senderRole: myRole };
       addMessageToUIAndState(msgObj, false);
