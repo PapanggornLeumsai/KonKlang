@@ -373,6 +373,59 @@
       return false;
     }
 
+    function resetRoomUIAndState() {
+      if (channel) { channel.unsubscribe(); channel = null; }
+      isRoomFullyOpened = false;
+      currentStep = 1;
+      buyerReady = false;
+      sellerReady = false;
+      dealNetPrice = 0;
+      isPriceAccepted = false;
+      chatHistory = [];
+
+      let netPriceInput = document.getElementById('input-net-price');
+      if (netPriceInput) netPriceInput.value = "";
+      
+      document.getElementById('text-shown-net').innerText = "0";
+      document.getElementById('text-shown-fee').innerText = "0";
+      document.getElementById('text-shown-total').innerText = "0";
+      document.getElementById('text-payout-amount').innerText = "0";
+
+      let priceTag = document.getElementById('price-tag');
+      if (priceTag) {
+        priceTag.innerText = "ยังไม่กำหนดราคา";
+        priceTag.className = "text-[11px] font-bold text-[#30d5c8] bg-[#30d5c8]/10 px-2.5 py-1 rounded border border-[#30d5c8]/20";
+      }
+
+      let chatBox = document.getElementById('chat-messages');
+      if (chatBox) {
+        chatBox.innerHTML = '<div class="flex justify-center"><div id="lobby-wait-notice" class="bg-[#ff9f0a]/10 text-[#ff9f0a] text-[11px] px-4 py-2 rounded-md border border-[#ff9f0a]/30 animate-pulse">⏳ สถานะ: กำลังรอการเชื่อมต่อช่องสัญญาณ...</div></div>';
+      }
+
+      let chatInput = document.getElementById('chat-input');
+      if (chatInput) {
+        chatInput.value = "";
+        chatInput.disabled = true;
+        chatInput.placeholder = "กำลังโหลดข้อมูล...";
+        chatInput.className = "flex-1 bg-[#09090b]/50 border border-[#27272a] rounded-lg px-4 py-3 text-sm text-[#52525b] cursor-not-allowed focus:outline-none";
+      }
+
+      let sendBtn = document.getElementById('chat-send-btn');
+      if (sendBtn) {
+        sendBtn.disabled = true;
+        sendBtn.className = "bg-[#27272a] text-[#a1a1aa] px-6 rounded-lg text-xs font-bold uppercase tracking-wider cursor-not-allowed transition-colors";
+      }
+
+      let timeline = document.getElementById('mission-timeline');
+      if (timeline) { timeline.classList.add('opacity-40', 'pointer-events-none'); }
+
+      updatePresenceUI('buyer', false);
+      updatePresenceUI('seller', false);
+      updateReadinessUI('buyer', false);
+      updateReadinessUI('seller', false);
+      updateMissionUI(1);
+    }
+
     function togglePassword(inputId, iconId) {
       const input = document.getElementById(inputId);
       const icon = document.getElementById(iconId);
@@ -422,7 +475,6 @@
         const savedRooms = localStorage.getItem(`rooms_${myUsername}`);
         if(savedRooms) { activeRoomsList = JSON.parse(savedRooms); renderSidebarRooms(); renderDashboardRooms(); }
 
-        // เช็คว่าเคยกดรีเฟรชคาห้องไหนไว้
         const activeRoomSession = localStorage.getItem('activeRoomCode');
         if (activeRoomSession) {
           currentRoom = activeRoomSession;
@@ -438,7 +490,6 @@
           goToChatScreen(currentRoom);
           listenToRoom(currentRoom, false);
           
-          // โหลด UI ขั้นตอนและแชทเก่ากลับมา
           setTimeout(() => {
             renderChatHistory();
             triggerFullRoomOpen(); 
@@ -446,7 +497,7 @@
             updateReadinessUI('buyer', buyerReady);
             updateReadinessUI('seller', sellerReady);
             if(dealNetPrice > 0) { renderPriceElements(dealNetPrice); }
-          }, 500);
+          }, 300);
         } else {
           checkAndRedirectToPendingRoom();
         }
@@ -458,13 +509,12 @@
       const savedRole = localStorage.getItem('pendingRole');
 
       if (savedRoom && savedRole && myUsername) {
+        resetRoomUIAndState();
+        
         myRole = savedRole;
         document.getElementById('role-tag').innerText = myRole === 'buyer' ? 'ผู้ซื้อ 🛒' : 'ผู้ขาย 💰';
         document.getElementById('role-tag').classList.remove('hidden');
         currentRoom = savedRoom;
-        
-        // Reset everything for fresh join
-        currentStep = 1; buyerReady = false; sellerReady = false; dealNetPrice = 0; isPriceAccepted = false; chatHistory = [];
         
         localStorage.removeItem('pendingRoom');
         localStorage.removeItem('pendingRole');
@@ -521,8 +571,8 @@
       if(confirm("⚠️ คุณแน่ใจใช่หรือไม่ที่จะทำการ [ปิดห้องดีลนี้ถาวร]?")) {
         if (channel) {
           channel.send({ type: 'broadcast', event: 'room_closed_by_admin', payload: {} });
-          setTimeout(() => { channel.unsubscribe(); channel = null; removeRoomIdFromLocal(currentRoom); executeRoomClear(); }, 500);
-        } else { removeRoomIdFromLocal(currentRoom); executeRoomClear(); }
+          setTimeout(() => { executeRoomClear(); }, 500);
+        } else { executeRoomClear(); }
       }
     }
 
@@ -535,10 +585,11 @@
     }
 
     function executeRoomClear() {
+      removeRoomIdFromLocal(currentRoom);
       localStorage.removeItem('activeRoomCode');
       localStorage.removeItem('activeRoomRole');
       currentRoom = "";
-      isRoomFullyOpened = false;
+      resetRoomUIAndState();
       document.getElementById('chat-page').classList.add('hidden');
       document.getElementById('role-tag').classList.add('hidden');
       document.getElementById('dashboard-page').classList.remove('hidden');
@@ -575,6 +626,9 @@
     }
 
     function startNewDeal() {
+      resetRoomUIAndState();
+      currentRoom = "";
+      
       document.getElementById('dashboard-page').classList.add('hidden');
       document.getElementById('sidebar').classList.add('-translate-x-full');
       
@@ -605,16 +659,12 @@
     }
 
     function generateAndPrepareRoom() {
+      resetRoomUIAndState();
+      
       let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
       let code = '';
       for (let i = 0; i < 6; i++) { code += chars.charAt(Math.floor(Math.random() * chars.length)); }
       currentRoom = code;
-      currentStep = 1;
-      buyerReady = false;
-      sellerReady = false;
-      dealNetPrice = 0;
-      isPriceAccepted = false;
-      chatHistory = [];
       
       document.getElementById('btn-create').classList.add('hidden');
       document.getElementById('generated-code').innerText = code;
@@ -637,9 +687,10 @@
     function joinRoom() {
       let code = document.getElementById('room-input').value.trim().toUpperCase();
       if(code.length === 6) {
+        resetRoomUIAndState();
         currentRoom = code;
+        
         if(!loadStateFromLocalStorage(code)) {
-           // Fresh join
            currentStep = 1; buyerReady = false; sellerReady = false; dealNetPrice = 0; isPriceAccepted = false; chatHistory = [];
         }
         
@@ -663,9 +714,7 @@
       updatePresenceUI('buyer', false);
       updatePresenceUI('seller', false);
       
-      if(myRole) {
-        updatePresenceUI(myRole, true);
-      }
+      if(myRole) { updatePresenceUI(myRole, true); }
     }
 
     function saveRoomToSidebar(code) {
@@ -716,15 +765,10 @@
     }
 
     function switchRoomFromSidebar(code) {
-      if(channel) { channel.unsubscribe(); channel = null; }
+      resetRoomUIAndState();
       currentRoom = code;
-      isRoomFullyOpened = false;
       
       loadStateFromLocalStorage(code);
-
-      document.getElementById('mission-timeline').classList.add('opacity-40', 'pointer-events-none');
-      document.getElementById('chat-messages').innerHTML = '<div class="flex justify-center"><div id="lobby-wait-notice" class="bg-[#ff9f0a]/10 text-[#ff9f0a] text-[11px] px-4 py-2 rounded-md border border-[#ff9f0a]/30 animate-pulse">⏳ สถานะ: กำลังกู้คืนช่องสัญญาณห้องดีล...</div></div>';
-
       goToChatScreen(code);
       listenToRoom(code, false);
       
@@ -735,7 +779,7 @@
         updateReadinessUI('buyer', buyerReady);
         updateReadinessUI('seller', sellerReady);
         if(dealNetPrice > 0) renderPriceElements(dealNetPrice);
-      }, 500);
+      }, 300);
       
       const sidebar = document.getElementById('sidebar');
       if (!sidebar.classList.contains('-translate-x-full')) { toggleSidebar(); }
@@ -760,7 +804,6 @@
       channel
         .on('broadcast', { event: 'join_event' }, (response) => {
           if (response.payload.role) { updatePresenceUI(response.payload.role, true); }
-          // เมื่อมีคนเข้าห้อง ให้ส่งสถานะของเรากลับไปบอกเขาด้วยว่าเราก็ออนไลน์อยู่
           channel.send({ type: 'broadcast', event: 'sync_presence', payload: { role: myRole } });
         })
         .on('broadcast', { event: 'sync_presence' }, (response) => {
@@ -808,7 +851,7 @@
           updateMissionUI(7);
         })
         .on('broadcast', { event: 'room_closed_by_admin' }, () => {
-          alert("🔒 ห้องนี้ถูกยกเลิกหรือปิดตัวลงแล้ว ระบบจะทำลายหลักฐานและพาคุณกลับสู่หน้าหลัก");
+          alert("🔒 ห้องนี้ถูกยกเลิกหรือปิดตัวลงแล้ว ระบบจะพาคุณกลับสู่หน้าหลัก");
           executeRoomClear();
         })
         .on('broadcast', { event: 'msg_event' }, (response) => {
@@ -816,9 +859,7 @@
         })
         .subscribe((status) => {
           if (status === 'SUBSCRIBED') {
-            // ปลดล็อก UI โชว์ขั้นตอนที่ 1 และปุ่มกดพร้อมทันทีที่เข้าห้อง (ไม่ต้องรออีกฝั่ง)
             triggerFullRoomOpen(); 
-            // ประกาศให้คนในห้องรู้ว่าเราออนไลน์
             channel.send({ type: 'broadcast', event: 'join_event', payload: { role: myRole } });
           }
         });
@@ -827,20 +868,16 @@
     function triggerFullRoomOpen() {
       isRoomFullyOpened = true;
       
-      // ปลดล็อกช่องแชท
       document.getElementById('chat-input').disabled = false;
-      document.getElementById('chat-input').placeholder = "พิมพ์ข้อความเจรจา ซื้อขายออนไลน์ได้ที่นี่...";
+      document.getElementById('chat-input').placeholder = "พิมพ์ข้อความเจรจา ซื้อขายได้ที่นี่...";
       document.getElementById('chat-input').className = "flex-1 bg-[#09090b] border border-[#27272a] rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#0071e3]";
       
       document.getElementById('chat-send-btn').disabled = false;
       document.getElementById('chat-send-btn').className = "bg-[#0071e3] text-white px-6 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-[#147ce5] transition-colors";
       
-      // ลบความโปร่งใสและปลดล็อกการกดปุ่มต่างๆ ใน Timeline
       document.getElementById('mission-timeline').classList.remove('opacity-40', 'pointer-events-none');
       
-      if(chatHistory.length === 0) {
-         renderChatHistory(); 
-      }
+      if(chatHistory.length === 0) { renderChatHistory(); }
       
       updatePresenceUI(myRole, true);
       updateMissionUI(currentStep);
@@ -857,7 +894,6 @@
       }
     }
 
-    // STEP 1 LOGIC
     function toggleMyReadiness() {
       if(myRole === 'buyer') {
         buyerReady = !buyerReady;
@@ -890,7 +926,6 @@
       }
     }
 
-    // STEP 2 LOGIC (Pricing + 5% Fee)
     function submitDealPrice() {
       const priceInput = document.getElementById('input-net-price').value.trim();
       const price = parseFloat(priceInput);
@@ -914,7 +949,13 @@
     }
 
     function renderPriceElements(netPrice) {
-      const fee = netPrice * 0.05; // คำนวณค่าธรรมเนียม 5%
+      if (netPrice === 0) {
+        document.getElementById('price-tag').innerText = "ยังไม่กำหนดราคา";
+        document.getElementById('price-tag').className = "text-[11px] font-bold text-[#30d5c8] bg-[#30d5c8]/10 px-2.5 py-1 rounded border border-[#30d5c8]/20";
+        return;
+      }
+
+      const fee = netPrice * 0.05; // คิดค่าธรรมเนียม 5%
       const totalWithFee = netPrice + fee;
       
       if (isPriceAccepted || currentStep >= 3) {
@@ -935,7 +976,6 @@
       if(textPayout) textPayout.innerText = netPrice.toLocaleString();
     }
 
-    // UPDATE MISSION TIMELINE DOM
     function updateMissionUI(step) {
       for(let i=1; i<=6; i++) {
         let stepEl = document.getElementById(`step-${i}`);
@@ -1047,12 +1087,11 @@
       if(isPriceAccepted && dealNetPrice > 0) { renderPriceElements(dealNetPrice); }
     }
 
-    // EXECUTIONS
     function simulatePayment() {
-      systemNotice("🔄 ระบบตรวจสอบ AI: กำลังสแกนแฮชใบสลิปโอนเงิน...", false);
+      systemNotice("🔄 ระบบตรวจสอบ AI: กำลังสแกนใบสลิปโอนเงิน...", false);
       setTimeout(() => {
         changeStep(4);
-        systemNotice("📢 แจ้งเตือนจากระบบ: ได้รับยอดชำระเงินโอนเข้าบัญชีกองกลางเรียบร้อย ปลอดภัย 100%! ผู้ขายสามารถส่งข้อมูลทรัพย์สินในแชทให้ผู้ซื้อได้เลย");
+        systemNotice("📢 แจ้งเตือน: ได้รับยอดชำระเงินโอนเข้าบัญชีกองกลางเรียบร้อย! ผู้ขายสามารถส่งข้อมูลทรัพย์สินในแชทให้ผู้ซื้อได้เลย");
       }, 1500);
     }
 
@@ -1061,7 +1100,7 @@
         document.getElementById('btn-confirm-1').classList.add('hidden');
         document.getElementById('btn-confirm-2').classList.remove('hidden');
         if (channel) { channel.send({ type: 'broadcast', event: 'confirm_step_1', payload: {} }); }
-        systemNotice("⚠️ ยืนยันรอบแรกเรียบร้อย! โปรดผูกมัดไอดี เปลี่ยนรหัสให้เสร็จสิ้น จากนั้นกดปุ่มรอบที่ 2 เพื่อยืนยันรับของ");
+        systemNotice("⚠️ ยืนยันรอบแรกเรียบร้อย! โปรดเปลี่ยนรหัสให้เสร็จสิ้น จากนั้นกดปุ่มรอบที่ 2 เพื่อยืนยันรับของ");
       } else if (round === 2) {
         changeStep(6);
         systemNotice("✅ การตรวจสอบเสร็จสิ้น! ระบบกำลังปลดล็อกอนุมัติโอนเงินกองกลางเข้าสู่บัญชีของผู้ขาย");
@@ -1070,10 +1109,9 @@
 
     function finishEntireDeal() {
       changeStep(7);
-      systemNotice("🎉 [ภารกิจสำเร็จลุล่วง] ระบบกลางดำเนินการโอนจ่ายเงินสดค้ำประกันเข้าสู่บัญชีหลักของผู้ขายเสร็จสิ้น ปิดดีลเรียบร้อย 100%");
+      systemNotice("🎉 [ภารกิจสำเร็จ] ระบบกลางดำเนินการโอนจ่ายเงินสดค้ำประกันเข้าบัญชีผู้ขายเสร็จสิ้น ปิดดีลเรียบร้อย 100%");
     }
 
-    // CHAT SYSTEM
     function sendMessage() {
       let input = document.getElementById('chat-input');
       let text = input.value.trim();
