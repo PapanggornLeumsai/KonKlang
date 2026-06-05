@@ -35,14 +35,20 @@
 
   <div id="sidebar" class="sidebar-transition fixed top-0 left-0 h-full w-80 bg-[#121214] border-r border-[#27272a] z-50 transform -translate-x-full p-6 shadow-2xl">
     <div class="flex justify-between items-center border-b border-[#27272a] pb-4 mb-4">
-      <h3 class="text-sm font-bold text-white uppercase tracking-wider">ประวัติการซื้อขาย</h3>
+      <h3 class="text-sm font-bold text-white uppercase tracking-wider">เมนูและห้องดีล</h3>
       <button onclick="toggleSidebar()" class="text-sm text-[#a1a1aa] hover:text-white">✕ ปิดเมนู</button>
     </div>
-    <div class="space-y-3 overflow-y-auto h-[calc(100vh-6rem)] pr-1">
-      <div class="cyber-panel p-3 rounded-lg bg-[#18181b]/40">
-        <h4 class="text-xs font-bold text-white mb-1">ดีลไอดีเกม — ROOM: <span class="font-mono text-[#0071e3]">X7B2K9</span></h4>
-        <p class="text-[10px] text-[#a1a1aa]">ยอดเงินกึ่งกลาง: 1,500 THB</p>
-        <span class="text-[10px] font-bold text-[#30d5c8] bg-[#30d5c8]/10 px-1.5 py-0.5 rounded mt-1.5 inline-block">✅ สำเร็จแล้ว</span>
+    
+    <div class="mb-5">
+      <button onclick="goHome(); toggleSidebar();" class="w-full bg-[#18181b] border border-[#27272a] hover:border-[#0071e3] text-white py-2.5 px-4 rounded-lg text-xs font-bold text-center block tracking-wide transition-all">
+        🏠 กลับสู่หน้าหลัก (Dashboard)
+      </button>
+    </div>
+
+    <div class="space-y-3">
+      <p class="text-[11px] text-[#a1a1aa] uppercase font-bold tracking-wider mb-1">ห้องดีลที่กำลังดำเนินรายการ</p>
+      <div id="sidebar-room-list" class="space-y-2">
+        <p id="no-room-text" class="text-xs text-[#52525b] italic">ยังไม่มีห้องดีลที่เปิดใช้งานในขณะนี้</p>
       </div>
     </div>
   </div>
@@ -53,7 +59,7 @@
       <p id="auth-title" class="text-xs text-[#a1a1aa] mb-6">เข้าสู่ระบบเพื่อใช้งานระบบซื้อขายออนไลน์</p>
       
       <div id="invite-alert" class="hidden mb-4 p-2.5 rounded-lg text-xs bg-[#0071e3]/10 border border-[#0071e3]/30 text-[#0071e3] font-bold animate-pulse">
-        📥 กรุณาล็อกอินบัญชีของคุณก่อน เพื่อเข้าร่วมห้องดีลโดยอัตโนมัติ
+        📥 ตรวจพบลิงก์เชิญเข้าห้องดีล! เข้าสู่ระบบเสร็จจะพาท่านเข้าห้องทันที
       </div>
 
       <div class="space-y-4 text-left mb-5">
@@ -83,7 +89,7 @@
         </div>
       </div>
       
-      <button id="auth-btn" onclick="handleAuthSubmit()" class="bg-[#0071e3] hover:bg-[#147ce5] text-white font-bold py-3 px-6 rounded-lg w-full text-xs uppercase tracking-wider transition-colors shadow-lg shadow-[#0071e3]/20">เข้าสู่ระบบ</button>
+      <button id="auth-btn" onclick="handleAuthSubmit()" class="bg-[#0071e3] hover:bg-[#147ce5] text-white font-bold py-3 px-6 rounded-lg w-full text-xs uppercase tracking-wider transition-colors shadow-lg">เข้าสู่ระบบ</button>
       
       <p class="text-xs text-[#a1a1aa] mt-4">
         <span id="auth-toggle-desc">ยังไม่มีบัญชีในระบบใช่หรือไม่?</span>
@@ -97,26 +103,27 @@
       <h1 class="text-5xl font-black text-white tracking-wider mb-2">KONKLANG</h1>
       <p class="text-sm text-[#0071e3] font-bold uppercase tracking-widest mb-8">ระบบซื้อขายออนไลน์กึ่งกลางปลอดภัย</p>
       
-      <button onclick="startNewDeal()" class="bg-[#0071e3] hover:bg-[#147ce5] text-white font-black py-4 px-12 rounded-lg text-sm uppercase tracking-widest transition-all shadow-xl shadow-[#0071e3]/20 hover:scale-105 transform duration-200">
+      <button onclick="startNewDeal()" class="bg-[#0071e3] hover:bg-[#147ce5] text-white font-black py-4 px-12 rounded-lg text-sm uppercase tracking-widest transition-all shadow-xl">
         🚀 เริ่มซื้อขายใหม่
       </button>
     </div>
   </div>
 
   <div id="lobby-page" class="hidden min-h-screen flex flex-col items-center justify-center pt-16 px-4">
-    <div class="text-center mb-6 max-w-xl">
+    <div class="text-center mb-6 max-w-xl relative w-full">
       <h1 class="text-3xl font-black text-white tracking-tight mb-2">KONKLANG</h1>
-      <p class="text-sm text-[#0071e3] font-semibold uppercase">สร้างหรือเข้าร่วมห้องกลาง</p>
+      <p class="text-sm text-[#0071e3] font-semibold uppercase">เลือกบทบาทและสร้างห้องหรือเข้าร่วมดีล</p>
+      <button onclick="goHome()" class="absolute top-0 right-4 text-xl text-[#a1a1aa] hover:text-white p-1">✕</button>
     </div>
 
     <div id="role-selection" class="w-full max-w-md cyber-panel p-5 rounded-xl mb-6 text-center shadow-2xl">
-      <p class="text-xs text-[#a1a1aa] mb-4 font-medium">กรุณาเลือกบทบาทของคุณในดีลนี้เพื่อตั้งค่าห้อง</p>
+      <p class="text-xs text-[#a1a1aa] mb-4 font-medium">กรุณาเลือกบทบาทของคุณในปัจจุบัน</p>
       <div class="grid grid-cols-2 gap-4">
-        <button id="btn-role-buyer" onclick="selectRole('buyer')" class="border border-[#27272a] hover:border-[#0071e3] bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all duration-200">
+        <button id="btn-role-buyer" onclick="selectRole('buyer')" class="border border-[#27272a] hover:border-[#0071e3] bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all">
           <span class="text-2xl">🛒</span>
           <span class="text-xs font-bold text-white">ฉันคือผู้ซื้อ</span>
         </button>
-        <button id="btn-role-seller" onclick="selectRole('seller')" class="border border-[#27272a] hover:border-[#0071e3] bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all duration-200">
+        <button id="btn-role-seller" onclick="selectRole('seller')" class="border border-[#27272a] hover:border-[#0071e3] bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all">
           <span class="text-2xl">💰</span>
           <span class="text-xs font-bold text-white">ฉันคือผู้ขาย</span>
         </button>
@@ -124,30 +131,34 @@
     </div>
 
     <div id="lobby-grid" class="opacity-20 pointer-events-none grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl transition-all duration-300">
-      <div id="create-box" class="cyber-panel p-5 rounded-xl text-center flex flex-col justify-between min-h-[250px] shadow-2xl">
+      
+      <div id="create-box" class="cyber-panel p-5 rounded-xl text-center flex flex-col justify-between min-h-[230px] shadow-2xl relative">
+        <button id="lobby-close-btn" onclick="goHome()" class="hidden absolute top-3 right-4 text-lg font-bold text-[#a1a1aa] hover:text-white transition-all">✕</button>
+        
         <div>
-          <h2 class="text-sm font-bold text-white mb-1">เริ่มต้นดีลใหม่</h2>
-          <p class="text-[11px] text-[#a1a1aa] mb-4">ระบุราคาขายเพื่อเปิดระบบห้องกลางและรับลิงก์เชิญ</p>
-          <input id="price-input" type="number" placeholder="ระบุจำนวนเงิน (บาท)" class="hidden bg-[#09090b] border border-[#27272a] rounded-lg p-2.5 w-full text-center text-sm mb-4 font-bold text-white focus:outline-none focus:border-[#0071e3]">
+          <h2 class="text-sm font-bold text-white mb-1">เริ่มต้นสร้างดีลใหม่</h2>
+          <p class="text-[11px] text-[#a1a1aa] mb-4">กดปุ่มด้านล่างเพื่อรับรหัสเข้าห้องและคัดลอกลิงก์ส่งต่อ</p>
         </div>
+        
         <div id="code-display" class="hidden my-2 p-3 bg-[#09090b] rounded-lg border border-[#27272a] cyber-glow flex flex-col gap-2">
           <div>
-            <p class="text-[10px] text-[#a1a1aa] mb-0.5 font-medium">รหัสห้อง (สำหรับส่งให้อีกฝ่ายกรอก)</p>
+            <p class="text-[10px] text-[#a1a1aa] mb-0.5 font-medium">รหัสห้องกลาง (สำหรับคัดลอกส่งให้อีกฝ่าย)</p>
             <p id="generated-code" class="text-3xl font-mono font-black text-[#0071e3] tracking-widest">XXXXXX</p>
           </div>
+          <p class="text-[11px] text-[#ff9f0a] font-medium animate-pulse mt-1">⏳ รอคู่ค้ากดลิงก์เชื่อมต่อเข้ามา เพื่อเริ่มภารกิจแชท...</p>
           <div class="border-t border-[#27272a] pt-2 mt-1">
             <button onclick="copyInviteLink()" class="w-full bg-[#18181b] border border-[#27272a] hover:border-[#0071e3] text-white py-1.5 rounded-md text-[11px] font-bold flex items-center justify-center gap-1 transition-all">
               🔗 คัดลอกลิงก์เชิญอัตโนมัติ
             </button>
           </div>
         </div>
-        <button id="btn-create" onclick="createRoom()" class="bg-[#0071e3] hover:bg-[#147ce5] text-white font-bold py-2.5 px-6 rounded-lg w-full text-xs uppercase tracking-wider transition-colors shadow-lg">สร้างห้องและตั้งราคา</button>
+        <button id="btn-create" onclick="generateAndPrepareRoom()" class="bg-[#0071e3] hover:bg-[#147ce5] text-white font-bold py-2.5 px-6 rounded-lg w-full text-xs uppercase tracking-wider transition-colors shadow-lg">สร้างและรับรหัสห้องดีล</button>
       </div>
 
-      <div id="join-box" class="cyber-panel p-5 rounded-xl text-center flex flex-col justify-between min-h-[250px] shadow-2xl">
+      <div id="join-box" class="cyber-panel p-5 rounded-xl text-center flex flex-col justify-between min-h-[230px] shadow-2xl">
         <div>
           <h2 class="text-sm font-bold text-white mb-1">เข้าร่วมห้องที่มีอยู่</h2>
-          <p class="text-[11px] text-[#a1a1aa] mb-4">กรอกรหัสผ่าน 6 หลักที่ได้จากผู้สร้างดีลเพื่อเข้าทำรายการ</p>
+          <p class="text-[11px] text-[#a1a1aa] mb-4">กรอกรหัสผ่าน 6 หลักที่ได้จากคู่ค้าเพื่อล็อกอินเข้าทำรายการ</p>
         </div>
         <div>
           <input id="room-input" type="text" maxlength="6" placeholder="รหัสห้อง 6 หลัก" class="bg-[#09090b] border border-[#27272a] rounded-lg p-2.5 w-full text-center font-mono text-lg uppercase tracking-widest text-white font-bold focus:outline-none focus:border-[#0071e3]">
@@ -163,20 +174,27 @@
         <div class="border-b border-[#27272a] pb-3 mb-4">
           <div class="flex justify-between items-center mb-2">
             <h3 class="text-xs font-bold text-[#a1a1aa] uppercase tracking-wider">ห้องดีลกลางระบบ</h3>
-            <button onclick="leaveRoom()" class="text-[11px] bg-red-600/10 border border-red-600/30 text-red-500 font-bold px-2.5 py-1 rounded-md hover:bg-red-600/20 transition-all">🚪 ออกจากห้อง</button>
+            <div class="flex items-center gap-3">
+              <button onclick="closeRoomPermanently()" class="text-[11px] bg-amber-500/10 border border-amber-500/30 text-amber-500 font-bold px-2 py-0.5 rounded hover:bg-amber-500/20 transition-all">
+                🔒 ปิดดีลถาวร
+              </button>
+              <button onclick="leaveRoom()" title="พับหน้าจอชั่วคราว" class="text-lg font-bold text-[#a1a1aa] hover:text-white transition-all focus:outline-none px-1">
+                ✕
+              </button>
+            </div>
           </div>
           <div class="flex justify-between items-center">
             <span class="text-sm font-bold text-white font-mono">ROOM: <span id="chat-room-id" class="text-[#0071e3]"></span></span>
-            <span id="price-tag" class="text-base font-black text-[#30d5c8] bg-[#30d5c8]/10 px-3 py-1 rounded-md border border-[#30d5c8]/20">0 THB</span>
+            <span id="price-tag" class="text-base font-black text-[#30d5c8] bg-[#30d5c8]/10 px-3 py-1 rounded-md border border-[#30d5c8]/20">คุยรายละเอียดราคาในแชท</span>
           </div>
         </div>
 
-        <div class="space-y-4">
-          <div id="step-1" class="mission-step p-4 bg-[#09090b] border border-[#0071e3] rounded-xl flex items-start gap-3 cyber-glow">
-            <div id="check-1" class="w-6 h-6 rounded-md font-bold flex items-center justify-center text-xs text-white bg-[#0071e3]">1</div>
+        <div id="mission-timeline" class="space-y-4 opacity-40 pointer-events-none">
+          <div id="step-1" class="mission-step p-4 bg-[#09090b] border border-[#27272a] rounded-xl flex items-start gap-3">
+            <div id="check-1" class="w-6 h-6 rounded-md font-bold border border-[#27272a] flex items-center justify-center text-xs text-[#a1a1aa] bg-[#18181b]">1</div>
             <div>
-              <h4 class="text-xs font-bold text-white">ขั้นตอนที่ 1: ตั้งราคาและจับคู่ดีล</h4>
-              <p class="text-[11px] text-[#a1a1aa] mt-0.5">เชื่อมต่อผ่านบัญชีสำเร็จ</p>
+              <h4 class="text-xs font-bold text-white">ขั้นตอนที่ 1: ตรวจสอบและตั้งราคากลางสำเร็จ</h4>
+              <p class="text-[11px] text-[#a1a1aa] mt-0.5">เชื่อมต่อและเปิดห้องสำเร็จ</p>
             </div>
           </div>
           <div id="step-2" class="mission-step p-4 bg-[#09090b] border border-[#27272a] rounded-xl flex flex-col gap-3">
@@ -196,7 +214,7 @@
           <div id="step-3" class="mission-step p-4 bg-[#09090b] border border-[#27272a] rounded-xl flex items-start gap-3">
             <div id="check-3" class="w-6 h-6 rounded-md font-bold border border-[#27272a] flex items-center justify-center text-xs text-[#a1a1aa] bg-[#18181b]">3</div>
             <div>
-              <h4 class="text-xs font-bold text-white">ขั้นตอนที่ 3: ผู้ขายส่งมอบรหัส</h4>
+              <h4 class="text-xs font-bold text-white">ขั้นตอนที่ 3: ผู้ขายส่งมอบรหัสสินค้า</h4>
               <p id="step-3-status" class="text-[11px] text-[#ff9f0a] font-bold mt-2 hidden">📥 เงินเข้าระบบแล้ว! ผู้ขายส่งรหัสได้เลย</p>
             </div>
           </div>
@@ -218,11 +236,11 @@
 
     <div class="flex-1 cyber-panel rounded-xl flex flex-col h-full overflow-hidden shadow-2xl">
       <div id="chat-messages" class="flex-1 p-5 overflow-y-auto space-y-4 min-h-[300px]">
-        <div class="flex justify-center"><div class="bg-[#27272a]/60 text-[#a1a1aa] text-[11px] px-4 py-1 rounded-md border border-[#27272a]">ยินดีต้อนรับสู่ระบบกลางประมูลแชทปลอดภัย</div></div>
+        <div class="flex justify-center"><div id="lobby-wait-notice" class="bg-[#ff9f0a]/10 text-[#ff9f0a] text-[11px] px-4 py-2 rounded-md border border-[#ff9f0a]/30 animate-pulse">⏳ สถานะ: กำลังรอคู่ค้ารายการกดลิงก์เชื่อมต่อเข้าสู่ห้อง...</div></div>
       </div>
       <div class="p-4 bg-[#121214] border-t border-[#27272a] flex gap-3">
-        <input id="chat-input" type="text" placeholder="พิมพ์ข้อความคุยกันที่นี่..." onkeypress="if(event.key === 'Enter') sendMessage()" class="flex-1 bg-[#09090b] border border-[#27272a] rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#0071e3]">
-        <button onclick="sendMessage()" class="bg-[#0071e3] text-white px-6 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-[#147ce5] transition-colors">ส่ง</button>
+        <input id="chat-input" type="text" disabled placeholder="จะพิมพ์ส่งข้อความได้เมื่อเข้าครบสองฝั่ง..." onkeypress="if(event.key === 'Enter') sendMessage()" class="flex-1 bg-[#09090b]/50 border border-[#27272a] rounded-lg px-4 py-3 text-sm text-[#52525b] cursor-not-allowed focus:outline-none">
+        <button id="chat-send-btn" disabled onclick="sendMessage()" class="bg-[#27272a] text-[#a1a1aa] px-6 rounded-lg text-xs font-bold uppercase tracking-wider cursor-not-allowed">ส่ง</button>
       </div>
     </div>
   </div>
@@ -235,24 +253,17 @@
     let currentRoom = "";
     let channel = null;
     let myRole = ""; 
-    let dealPrice = 0;
     let myUsername = "";
     let isRegisterMode = false;
+    let isRoomFullyOpened = false; // เอาไว้เช็กว่าสองฝั่งเจอกันหรือยัง
 
-    // ฟังก์ชันสำหรับเปิด-ปิดแสดงรหัสผ่าน (ดวงตา 👁️ / 🔒)
     function togglePassword(inputId, iconId) {
       const input = document.getElementById(inputId);
       const icon = document.getElementById(iconId);
-      if (input.type === "password") {
-        input.type = "text";
-        icon.innerText = "🔒";
-      } else {
-        input.type = "password";
-        icon.innerText = "👁️";
-      }
+      if (input.type === "password") { input.type = "text"; icon.innerText = "🔒"; } 
+      else { input.type = "password"; icon.innerText = "👁️"; }
     }
 
-    // สลับโหมด Login / Register
     function toggleAuthMode() {
       isRegisterMode = !isRegisterMode;
       const title = document.getElementById('auth-title');
@@ -310,77 +321,42 @@
         document.getElementById('invite-alert').classList.add('hidden');
         window.history.replaceState({}, document.title, window.location.pathname);
 
+        // ฝั่งคนจอยจากลิงก์: อัปเดตและเข้าไปรอเชื่อมต่อในแชททันที
+        updateSidebarActiveRoom(savedRoom);
+        goToChatScreen(savedRoom);
         listenToRoom(savedRoom, false);
-        setTimeout(() => {
-          channel.send({ type: 'broadcast', event: 'join_event', payload: { role: myRole } });
-        }, 1200);
       }
     }
 
-    // ปรับปรุงระบบยืนยันตัวตนใหม่ทั้งหมด ให้บันทึกข้อมูลลง Table บน Database โดยตรง (ไร้ปัญหา Rate Limit)
     async function handleAuthSubmit() {
       const username = document.getElementById('login-username').value.trim();
       const password = document.getElementById('login-password').value.trim();
       const confirmPassword = document.getElementById('login-confirm-password').value.trim();
       
-      if (!username || !password) {
-        alert("กรุณากรอกข้อมูลชื่อผู้ใช้งานและรหัสผ่านให้ครบถ้วนครับ");
-        return;
-      }
-      if (password.length < 6) {
-        alert("รหัสผ่านต้องมีความยาวไม่ต่ำกว่า 6 ตัวอักษรเพื่อความปลอดภัยครับ");
-        return;
-      }
+      if (!username || !password) { alert("กรุณากรอกข้อมูลให้ครบถ้วนครับ"); return; }
+      if (password.length < 6) { alert("รหัสผ่านต้องมีความยาวไม่ต่ำกว่า 6 ตัวอักษรครับ"); return; }
 
       if (isRegisterMode) {
-        if (password !== confirmPassword) {
-          alert("รหัสผ่านทั้งสองช่องไม่ตรงกัน กรุณาตรวจสอบอีกครั้งครับ");
-          return;
-        }
+        if (password !== confirmPassword) { alert("รหัสผ่านทั้งสองช่องไม่ตรงกันครับ"); return; }
+        const { data: existingUser } = await supabaseClient.from('messages').select('sender_name').eq('sender_name', username).limit(1);
+        if (existingUser && existingUser.length > 0) { alert("❌ ชื่อผู้ใช้งานนี้ถูกใช้ไปแล้วครับ"); return; }
 
-        // ค้นหาว่าผู้ใช้งานคนนี้เคยลงทะเบียนไว้แล้วหรือยัง
-        const { data: existingUser } = await supabaseClient
-          .from('messages')
-          .select('sender_name')
-          .eq('sender_name', username)
-          .limit(1);
-
-        if (existingUser && existingUser.length > 0) {
-          alert("❌ ชื่อผู้ใช้งานนี้ถูกใช้ไปแล้ว กรุณาเปลี่ยนชื่อผู้ใช้งานใหม่ครับ");
-          return;
-        }
-
-        // ลงทะเบียนผู้ใช้ใหม่โดยจัดเก็บข้อมูลไว้ที่โครงสร้างเบสล็อกของแชทชั่วคราวเพื่อความเร็ว
-        await supabaseClient.from('messages').insert([
-          { room_id: 'SYSTEM_REG', sender_name: username, message_text: password }
-        ]);
-
-        alert("🎉 สมัครสมาชิกและเข้าสู่ระบบสำเร็จ!");
+        await supabaseClient.from('messages').insert([{ room_id: 'SYSTEM_REG', sender_name: username, message_text: password }]);
+        alert("🎉 สมัครสมาชิกสำเร็จ!");
       } else {
-        // ขั้นตอนการเข้าสู่ระบบ (Login)
-        const { data: userRecord } = await supabaseClient
-          .from('messages')
-          .select('message_text')
-          .eq('room_id', 'SYSTEM_REG')
-          .eq('sender_name', username)
-          .order('created_at', { ascending: false })
-          .limit(1);
-
+        const { data: userRecord } = await supabaseClient.from('messages').select('message_text').eq('room_id', 'SYSTEM_REG').eq('sender_name', username).order('created_at', { ascending: false }).limit(1);
         if (!userRecord || userRecord.length === 0) {
-          // หากยังไม่มีบัญชีในตาราง จำลองให้สร้างและผ่านเพื่ออำนวยความสะดวกในการทดสอบทดลองทันที
-          await supabaseClient.from('messages').insert([
-            { room_id: 'SYSTEM_REG', sender_name: username, message_text: password }
-          ]);
+          await supabaseClient.from('messages').insert([{ room_id: 'SYSTEM_REG', sender_name: username, message_text: password }]);
         } else if (userRecord[0].message_text !== password) {
-          alert("❌ รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง หรือเปิดดูรหัสก่อนกดส่งครับ");
-          return;
+          alert("❌ รหัสผ่านไม่ถูกต้องครับ"); return;
         }
       }
 
       myUsername = username;
       localStorage.setItem('konklang_user', username);
       showDashboardView(username);
-      checkAndRedirectToPendingRoom();
+      
+      if (localStorage.getItem('pendingRoom')) { checkAndRedirectToPendingRoom(); }
     }
 
     function handleLogout() {
@@ -390,13 +366,36 @@
       location.reload(); 
     }
 
+    function closeRoomPermanently() {
+      if(confirm("⚠️ คุณแน่ใจใช่หรือไม่ที่จะทำการ [ปิดห้องดีลนี้ถาวร]?")) {
+        if (channel) {
+          channel.send({ type: 'broadcast', event: 'room_closed_by_admin', payload: {} });
+          setTimeout(() => { channel.unsubscribe(); channel = null; executeRoomClear(); }, 500);
+        } else { executeRoomClear(); }
+      }
+    }
+
+    function executeRoomClear() {
+      currentRoom = "";
+      isRoomFullyOpened = false;
+      document.getElementById('chat-page').classList.add('hidden');
+      document.getElementById('role-tag').classList.add('hidden');
+      document.getElementById('dashboard-page').classList.remove('hidden');
+      document.getElementById('sidebar-room-list').innerHTML = `<p id="no-room-text" class="text-xs text-[#52525b] italic">ยังไม่มีห้องดีลที่เปิดใช้งานในขณะนี้</p>`;
+      alert("🔒 ระบบลบเซสชันห้องดีลออกจากเมนูและประวัติเรียบร้อย");
+    }
+
     function leaveRoom() {
-      if(confirm("คุณต้องการออกจากห้องซื้อขายกึ่งกลางนี้ใช่หรือไม่?")) {
-        if (channel) { channel.unsubscribe(); channel = null; }
-        currentRoom = "";
-        document.getElementById('chat-page').classList.add('hidden');
-        document.getElementById('role-tag').classList.add('hidden');
-        document.getElementById('dashboard-page').classList.remove('hidden');
+      document.getElementById('chat-page').classList.add('hidden');
+      document.getElementById('dashboard-page').classList.remove('hidden');
+    }
+
+    function rejoinActiveRoom() {
+      if (currentRoom) {
+        document.getElementById('dashboard-page').classList.add('hidden');
+        document.getElementById('lobby-page').classList.add('hidden');
+        document.getElementById('chat-page').classList.remove('hidden');
+        toggleSidebar();
       }
     }
 
@@ -405,19 +404,24 @@
       document.getElementById('username-tag').classList.remove('hidden');
       document.getElementById('menu-btn').classList.remove('hidden'); 
       document.getElementById('logout-btn').classList.remove('hidden'); 
-      
       document.getElementById('login-page').classList.add('hidden');
       document.getElementById('dashboard-page').classList.remove('hidden');
     }
 
     function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      sidebar.classList.toggle('-translate-x-full');
+      document.getElementById('sidebar').classList.toggle('-translate-x-full');
     }
 
     function startNewDeal() {
       document.getElementById('dashboard-page').classList.add('hidden');
       document.getElementById('sidebar').classList.add('-translate-x-full');
+      
+      // Reset หน้า lobby เผื่อมากดซ้ำ
+      document.getElementById('btn-create').classList.remove('hidden');
+      document.getElementById('code-display').classList.add('hidden');
+      document.getElementById('lobby-close-btn').classList.add('hidden');
+      document.getElementById('room-input').value = "";
+      
       document.getElementById('lobby-page').classList.remove('hidden');
     }
 
@@ -425,10 +429,7 @@
       if (!myUsername) return;
       document.getElementById('lobby-page').classList.add('hidden');
       document.getElementById('chat-page').classList.add('hidden');
-      document.getElementById('role-tag').classList.add('hidden');
-      document.getElementById('sidebar').classList.add('-translate-x-full');
       document.getElementById('dashboard-page').classList.remove('hidden');
-      if (channel) { channel.unsubscribe(); }
     }
 
     function selectRole(role) {
@@ -437,49 +438,37 @@
       document.getElementById('role-tag').classList.remove('hidden');
       document.getElementById('lobby-grid').classList.remove('opacity-20', 'pointer-events-none');
       
-      document.getElementById('btn-role-buyer').className = role === 'buyer' ? 'border-2 border-[#0071e3] bg-[#0071e3]/10 p-4 rounded-lg flex flex-col items-center gap-2 transition-all duration-200' : 'border border-[#27272a] opacity-40 bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all duration-200';
-      document.getElementById('btn-role-seller').className = role === 'seller' ? 'border-2 border-[#0071e3] bg-[#0071e3]/10 p-4 rounded-lg flex flex-col items-center gap-2 transition-all duration-200' : 'border border-[#27272a] opacity-40 bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all duration-200';
-
-      if (role === 'seller') {
-        document.getElementById('price-input').classList.remove('hidden');
-        document.getElementById('join-box').classList.add('opacity-20', 'pointer-events-none');
-        document.getElementById('create-box').classList.remove('opacity-20', 'pointer-events-none');
-      } else {
-        document.getElementById('price-input').classList.add('hidden');
-        document.getElementById('create-box').classList.add('opacity-20', 'pointer-events-none');
-        document.getElementById('join-box').classList.remove('opacity-20', 'pointer-events-none');
-      }
+      document.getElementById('btn-role-buyer').className = role === 'buyer' ? 'border-2 border-[#0071e3] bg-[#0071e3]/10 p-4 rounded-lg flex flex-col items-center gap-2 transition-all' : 'border border-[#27272a] opacity-40 bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all';
+      document.getElementById('btn-role-seller').className = role === 'seller' ? 'border-2 border-[#0071e3] bg-[#0071e3]/10 p-4 rounded-lg flex flex-col items-center gap-2 transition-all' : 'border border-[#27272a] opacity-40 bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all';
     }
 
-    function createRoom() {
-      const price = document.getElementById('price-input').value;
-      if (!price || price <= 0) {
-        alert("กรุณาระบุจำนวนเงินสินค้าของดีลนี้ให้ถูกต้องครับ");
-        return;
-      }
-      dealPrice = price;
-
+    // ฟังก์ชันสร้างรหัสห้องดีลแบบไม่ต้องกรอกราคา (ทั้งผู้ซื้อ/ผู้ขายกดใช้ปุ่มนี้เพื่อเปิดห้องได้หมด)
+    function generateAndPrepareRoom() {
       let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
       let code = '';
       for (let i = 0; i < 6; i++) { code += chars.charAt(Math.floor(Math.random() * chars.length)); }
       currentRoom = code;
       
       document.getElementById('btn-create').classList.add('hidden');
-      document.getElementById('price-input').classList.add('hidden');
       document.getElementById('generated-code').innerText = code;
       document.getElementById('code-display').classList.remove('hidden');
+      
+      // ✅ แสดงผลปุ่มกากบาท ✕ ประจำหน้า Lobby ให้ปิดกลับแดชบอร์ดได้
+      document.getElementById('lobby-close-btn').classList.remove('hidden');
 
+      // ✅ อัปเดตผูกมัดห้องนี้ลงสู่ Sidebar แถบเมนู 3 ขีดทันทีก่อนการเชื่อมต่อสมบูรณ์
+      updateSidebarActiveRoom(code);
+
+      // เปิดหน้าจอแชทเพื่อเข้าสู่โหมด Standby รอกลางอากาศ
+      goToChatScreen(code);
       listenToRoom(code, true);
     }
 
     function copyInviteLink() {
       const oppositeRole = myRole === 'seller' ? 'buyer' : 'seller';
       const inviteUrl = `${window.location.origin}${window.location.pathname}?room=${currentRoom}&role=${oppositeRole}`;
-      
       navigator.clipboard.writeText(inviteUrl).then(() => {
-        alert("🔗 คัดลอกลิงก์เชิญส่งดีลเรียบร้อยแล้ว! เมื่ออีกฝ่ายกดจะผ่านขั้นตอนล็อกอินอย่างปลอดภัยและเข้าห้องนี้ทันที");
-      }).catch(err => {
-        alert("กรุณาส่งรหัสห้อง 6 หลักให้แทนครับ: " + currentRoom);
+        alert("🔗 คัดลอกลิงก์สำเร็จ! เมื่อส่งต่อให้อีกฝ่ายกดเข้ามา ห้องแชทภารกิจจะเปิดทำงานให้ทันทีครับ");
       });
     }
 
@@ -487,42 +476,92 @@
       let code = document.getElementById('room-input').value.trim().toUpperCase();
       if(code.length === 6) {
         currentRoom = code;
+        updateSidebarActiveRoom(code);
+        goToChatScreen(code);
         listenToRoom(code, false);
-        setTimeout(() => {
-          channel.send({ type: 'broadcast', event: 'join_event', payload: { role: myRole } });
-        }, 800);
       } else {
         alert("กรุณากรอกรหัสห้องให้ครบ 6 หลักครับ");
       }
     }
 
+    function goToChatScreen(code) {
+      document.getElementById('lobby-page').classList.add('hidden');
+      document.getElementById('chat-page').classList.remove('hidden');
+      document.getElementById('chat-room-id').innerText = code;
+    }
+
+    // ฟังก์ชันจัดการเพิ่มข้อมูลห้องดีลจริงขึ้นบน Sidebar เมนู 3 ขีด
+    function updateSidebarActiveRoom(code) {
+      const sidebarContainer = document.getElementById('sidebar-room-list');
+      sidebarContainer.innerHTML = `
+        <div onclick="rejoinActiveRoom()" class="cyber-panel p-3 rounded-lg bg-[#0071e3]/10 border border-[#0071e3]/30 cursor-pointer hover:bg-[#0071e3]/20 transition-all">
+          <h4 class="text-xs font-bold text-white mb-1">ห้องดีลหลัก — ROOM: <span class="font-mono text-[#0071e3]">${code}</span></h4>
+          <span id="sidebar-status-badge" class="text-[10px] font-bold text-[#ff9f0a] bg-[#ff9f0a]/10 px-1.5 py-0.5 rounded mt-1 inline-block">⏳ กำลังรออีกฝ่าย</span>
+        </div>
+      `;
+    }
+
     function listenToRoom(roomCode, isCreator) {
+      if (channel) { channel.unsubscribe(); }
+      
       channel = supabaseClient.channel(`room_${roomCode}`);
       channel
         .on('broadcast', { event: 'join_event' }, () => {
-          if (isCreator) {
-            channel.send({ type: 'broadcast', event: 'sync_price', payload: { price: dealPrice } });
-            openChatView(roomCode, dealPrice);
+          if (isCreator && !isRoomFullyOpened) {
+            channel.send({ type: 'broadcast', event: 'sync_ready_signal', payload: {} });
+            triggerFullRoomOpen();
           }
         })
-        .on('broadcast', { event: 'sync_price' }, (response) => {
-          if (!isCreator) {
-            dealPrice = response.payload.price;
-            openChatView(roomCode, dealPrice);
+        .on('broadcast', { event: 'sync_ready_signal' }, () => {
+          if (!isCreator && !isRoomFullyOpened) {
+            triggerFullRoomOpen();
           }
         })
         .on('broadcast', { event: 'payment_done' }, () => { updateMissionUI(2); })
         .on('broadcast', { event: 'confirm_step_1' }, () => { systemNotice("ระบบกลาง: ผู้ซื้อกดยืนยันความถูกต้องรอบที่ 1 แล้ว ⏳"); })
         .on('broadcast', { event: 'confirm_step_2' }, () => { updateMissionUI(4); })
+        .on('broadcast', { event: 'room_closed_by_admin' }, () => {
+          alert("🔒 ห้องนี้ถูกปิดตัวลงแล้ว ระบบจะพาท่านกลับสู่หน้าหลัก");
+          executeRoomClear();
+        })
         .on('broadcast', { event: 'msg_event' }, (response) => { appendMessage(response.payload.text, 'left', response.payload.senderRole); })
-        .subscribe();
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED' && !isCreator) {
+            // ดันสัญญาณแจ้งฝั่งผู้สร้างว่าตนเองเข้าเชื่อมต่อแล้ว
+            channel.send({ type: 'broadcast', event: 'join_event', payload: { role: myRole } });
+          }
+        });
     }
 
-    function openChatView(code, price) {
-      document.getElementById('lobby-page').classList.add('hidden');
-      document.getElementById('chat-page').classList.remove('hidden');
-      document.getElementById('chat-room-id').innerText = code;
-      document.getElementById('price-tag').innerText = parseInt(price).toLocaleString() + " THB";
+    // ฟังก์ชันทำงานปลดล็อกห้องซื้อขายอย่างเต็มรูปแบบเมื่อคู่ค้าเข้ามาพบกัน
+    function triggerFullRoomOpen() {
+      isRoomFullyOpened = true;
+      
+      // 1. ปลดล็อกและเปิดใช้งานช่องแชทและปุ่มส่ง
+      document.getElementById('chat-input').disabled = false;
+      document.getElementById('chat-input').placeholder = "พิมพ์ข้อความเจรจา หรือระบุข้อตกลงราคาที่นี่ได้เลย...";
+      document.getElementById('chat-input').className = "flex-1 bg-[#09090b] border border-[#27272a] rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#0071e3]";
+      
+      document.getElementById('chat-send-btn').disabled = false;
+      document.getElementById('chat-send-btn').className = "bg-[#0071e3] text-white px-6 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-[#147ce5] transition-colors";
+      
+      // 2. ปลดล็อกไทม์ไลน์ภารกิจให้เห็นเด่นชัด
+      document.getElementById('mission-timeline').classList.remove('opacity-40', 'pointer-events-none');
+      
+      // 3. แจ้งเตือนสมานฉันท์สำเร็จในระบบ
+      const waitNotice = document.getElementById('lobby-wait-notice');
+      if(waitNotice) {
+        waitNotice.className = "bg-[#30d5c8]/10 text-[#30d5c8] text-[11px] px-4 py-2 rounded-md border border-[#30d5c8]/30 animate-none";
+        waitNotice.innerText = "✅ ห้องซื้อขายเปิดทำงานสำเร็จ! อีกฝ่ายได้เข้าร่วมห้องดีลเรียบร้อยแล้ว";
+      }
+
+      // 4. เปลี่ยน Badge ใน Sidebar ให้เป็น ดำเนินรายการ
+      const sideBadge = document.getElementById('sidebar-status-badge');
+      if (sideBadge) {
+        sideBadge.className = "text-[10px] font-bold text-[#30d5c8] bg-[#30d5c8]/10 px-1.5 py-0.5 rounded mt-1 inline-block";
+        sideBadge.innerText = "⚡ ดำเนินรายการอยู่";
+      }
+
       updateMissionUI(1);
     }
 
@@ -534,7 +573,9 @@
         document.getElementById('step-2').className = "mission-step p-4 bg-[#09090b] border border-[#0071e3] rounded-xl flex flex-col gap-3 cyber-glow";
         if (myRole === 'buyer') {
           document.getElementById('buyer-upload-zone').classList.remove('hidden');
+          document.getElementById('step-2-status').classList.add('hidden');
         } else {
+          document.getElementById('buyer-upload-zone').classList.add('hidden');
           document.getElementById('step-2-status').classList.remove('hidden');
         }
       } 
@@ -546,7 +587,7 @@
         document.getElementById('step-2-status').classList.add('hidden');
         document.getElementById('step-3').className = "mission-step p-4 bg-[#09090b] border border-[#ff9f0a] rounded-xl flex items-start gap-3";
         document.getElementById('step-3-status').classList.remove('hidden');
-        systemNotice("📢 ระบบกลาง: ตรวจพบเงินกองกลางเรียบร้อย! ปลอดภัย 100% ผู้ขายทำการส่งข้อมูลไอดีเกมในแชทได้ทันทีครับ");
+        systemNotice("📢 ระบบกลาง: ตรวจพบสลิปการโอนเงินเรียบร้อย! ปลอดภัย 100% ผู้ขายสามารถทำการส่งข้อมูลไอดีเกมหรือของรางวัลในแชทได้ทันทีครับ");
         if (myRole === 'buyer') { document.getElementById('buyer-confirm-zone').classList.remove('hidden'); }
       }
       else if (step === 4) {
@@ -557,14 +598,14 @@
         document.getElementById('check-4').className = "w-6 h-6 rounded-md font-bold flex items-center justify-center text-xs text-black bg-[#30d5c8]";
         document.getElementById('step-4').className = "mission-step p-4 bg-[#30d5c8]/10 border border-[#30d5c8] rounded-xl flex flex-col gap-3 cyber-glow";
         document.getElementById('buyer-confirm-zone').classList.add('hidden');
-        systemNotice("🎉 [MISSION COMPLETED] ซื้อขายนี้เสร็จสิ้นอย่างสมบูรณ์แบบ เงินถูกโอนเข้าผู้ขายเรียบร้อย!");
+        systemNotice("🎉 [MISSION COMPLETED] ดีลนี้เสร็จสิ้นอย่างสมบูรณ์แบบ เงินกองกลางพร้อมโอนออกให้ผู้ขายเรียบร้อย!");
       }
     }
 
     function simulatePayment() {
       systemNotice("🔄 กำลังตรวจสอบสลิปหลักฐานเข้าบัญชีธนาคารกลาง...");
       setTimeout(() => {
-        channel.send({ type: 'broadcast', event: 'payment_done', payload: {} });
+        if (channel) { channel.send({ type: 'broadcast', event: 'payment_done', payload: {} }); }
         updateMissionUI(2);
       }, 1500);
     }
@@ -574,10 +615,10 @@
         document.getElementById('btn-confirm-1').classList.add('hidden');
         document.getElementById('btn-confirm-2').classList.remove('hidden');
         document.getElementById('step-4').className = "mission-step p-4 bg-[#09090b] border border-[#30d5c8] rounded-xl flex flex-col gap-3";
-        channel.send({ type: 'broadcast', event: 'confirm_step_1', payload: {} });
-        systemNotice("⚠️ คุณกดยืนยันสินค้ากึ่งกลางรอบที่ 1 แล้ว กรุณาตรวจสอบและเปลี่ยนรหัสไอดีเกมให้เรียบร้อย จากนั้นกดปุ่มสีเขียวเพื่อปิดงานรอบสุดท้าย");
+        if (channel) { channel.send({ type: 'broadcast', event: 'confirm_step_1', payload: {} }); }
+        systemNotice("⚠️ คุณกดยืนยันสินค้ากึ่งกลางรอบที่ 1 แล้ว กรุณาตรวจสอบและเปลี่ยนรหัสผ่านสินค้าให้เสร็จสิ้น จากนั้นกดปุ่มสีเขียวเพื่อจบงานรอบสุดท้าย");
       } else if (round === 2) {
-        channel.send({ type: 'broadcast', event: 'confirm_step_2', payload: {} });
+        if (channel) { channel.send({ type: 'broadcast', event: 'confirm_step_2', payload: {} }); }
         updateMissionUI(4);
       }
     }
@@ -587,7 +628,7 @@
       let text = input.value.trim();
       if (!text) return;
       appendMessage(text, 'right', myRole);
-      channel.send({ type: 'broadcast', event: 'msg_event', payload: { text: text, senderRole: myRole } });
+      if (channel) { channel.send({ type: 'broadcast', event: 'msg_event', payload: { text: text, senderRole: myRole } }); }
       input.value = "";
     }
 
