@@ -160,10 +160,10 @@
           <div class="flex justify-between items-center mb-2">
             <h3 class="text-xs font-bold text-[#a1a1aa] uppercase tracking-wider">ห้องดีลกลางระบบ</h3>
             <div class="flex items-center gap-3">
-              <button onclick="closeRoomPermanently()" class="text-[11px] bg-amber-500/10 border border-amber-500/30 text-amber-500 font-bold px-2 py-0.5 rounded hover:bg-amber-500/20 transition-all">
+              <button id="close-room-btn" onclick="closeRoomPermanently()" class="text-[11px] bg-amber-500/10 border border-amber-500/30 text-amber-500 font-bold px-2 py-0.5 rounded hover:bg-amber-500/20 transition-all">
                 🔒 ปิดดีลถาวร
               </button>
-              <button onclick="leaveRoom()" title="พับหน้าจอชั่วคราว" class="text-lg font-bold text-[#a1a1aa] hover:text-white transition-all focus:outline-none px-1">
+              <button id="leave-room-btn" onclick="leaveRoom()" title="พับหน้าจอชั่วคราว" class="text-lg font-bold text-[#a1a1aa] hover:text-white transition-all focus:outline-none px-1">
                 ✕
               </button>
             </div>
@@ -174,7 +174,7 @@
               <span class="text-sm font-bold text-white font-mono">ROOM: <span id="chat-room-id" class="text-[#0071e3]"></span></span>
               <span id="price-tag" class="text-base font-black text-[#30d5c8] bg-[#30d5c8]/10 px-3 py-1 rounded-md border border-[#30d5c8]/20">คุยรายละเอียดราคาในแชท</span>
             </div>
-            <button onclick="copyInviteLink()" class="w-full bg-[#0071e3] hover:bg-[#147ce5] text-white py-1.5 rounded-md text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all shadow-md">
+            <button id="copy-link-zone" onclick="copyInviteLink()" class="w-full bg-[#0071e3] hover:bg-[#147ce5] text-white py-1.5 rounded-md text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all shadow-md">
               🔗 คัดลอกลิงก์เชิญคู่ค้าอัตโนมัติ
             </button>
           </div>
@@ -327,7 +327,19 @@
         const roomList = JSON.parse(savedRooms);
         roomList.forEach(roomCode => {
           if (!roomsState[roomCode]) {
-            roomsState[roomCode] = { isRoomFullyOpened: false, currentStep: 0, price: 0, messages: [] };
+            // ดึงสถานะเชิงลึกจาก localStorage ของตัวห้อง
+            const isOpened = localStorage.getItem(`room_${roomCode}_opened`) === "true";
+            const step = parseInt(localStorage.getItem(`room_${roomCode}_step`) || "0");
+            const savedPrice = parseFloat(localStorage.getItem(`room_${roomCode}_price`) || "0");
+            const savedRole = localStorage.getItem(`room_${roomCode}_myrole`) || "";
+
+            roomsState[roomCode] = { 
+              isRoomFullyOpened: isOpened, 
+              currentStep: step, 
+              price: savedPrice, 
+              messages: [],
+              savedRole: savedRole
+            };
           }
         });
         updateSidebarUI();
@@ -345,6 +357,7 @@
 
       if (savedRoom && savedRole && myUsername) {
         myRole = savedRole;
+        localStorage.setItem(`room_${savedRoom}_myrole`, savedRole);
         document.getElementById('role-tag').innerText = myRole === 'buyer' ? 'ผู้ซื้อ 🛒' : 'ผู้ขาย 💰';
         document.getElementById('role-tag').classList.remove('hidden');
         currentRoom = savedRoom;
@@ -404,6 +417,10 @@
     }
 
     function closeRoomPermanently() {
+      if (roomsState[currentRoom] && roomsState[currentRoom].isRoomFullyOpened) {
+        alert("❌ ไม่สามารถลบหรือปิดห้องซื้อขายได้ เนื่องจากห้องปลดล็อคและดำเนินรายการอยู่ครับ!");
+        return;
+      }
       if(confirm("⚠️ คุณแน่ใจใช่หรือไม่ที่จะทำการ [ปิดห้องดีลนี้ถาวร]?")) {
         if (channel) {
           channel.send({ type: 'broadcast', event: 'room_closed_by_admin', payload: {} });
@@ -418,6 +435,10 @@
         channel = null;
       }
       delete roomsState[roomCode];
+      localStorage.removeItem(`room_${roomCode}_opened`);
+      localStorage.removeItem(`room_${roomCode}_step`);
+      localStorage.removeItem(`room_${roomCode}_price`);
+      localStorage.removeItem(`room_${roomCode}_myrole`);
       saveActiveRoomsToStorage();
       updateSidebarUI();
       
@@ -429,6 +450,10 @@
     }
 
     function leaveRoom() {
+      if (roomsState[currentRoom] && roomsState[currentRoom].isRoomFullyOpened) {
+        alert("❌ ไม่สามารถออกจากหน้านี้ได้ เนื่องจากห้องดีลถูกปลดล็อคแล้ว ต้องทำรายการให้เสร็จสิ้นครับ!");
+        return;
+      }
       document.getElementById('chat-page').classList.add('hidden');
       document.getElementById('dashboard-page').classList.remove('hidden');
     }
@@ -436,6 +461,14 @@
     function switchRoom(roomCode) {
       if (roomCode) {
         currentRoom = roomCode;
+        
+        // กู้คืนบทบาทเดิมที่เคยล็อคไว้กับห้องนี้
+        if (roomsState[roomCode].savedRole) {
+          myRole = roomsState[roomCode].savedRole;
+          document.getElementById('role-tag').innerText = myRole === 'buyer' ? 'ผู้ซื้อ 🛒' : 'ผู้ขาย 💰';
+          document.getElementById('role-tag').classList.remove('hidden');
+        }
+
         document.getElementById('dashboard-page').classList.add('hidden');
         document.getElementById('lobby-page').classList.add('hidden');
         document.getElementById('chat-page').classList.remove('hidden');
@@ -477,6 +510,10 @@
       
       document.getElementById('seller-price-zone').classList.add('hidden');
       document.getElementById('buyer-price-zone').classList.add('hidden');
+      
+      document.getElementById('close-room-btn').classList.remove('hidden');
+      document.getElementById('leave-room-btn').classList.remove('hidden');
+      document.getElementById('copy-link-zone').classList.remove('hidden');
     }
 
     function showDashboardView(username) {
@@ -504,6 +541,10 @@
 
     function goHome() {
       if (!myUsername) return;
+      if (currentRoom && roomsState[currentRoom] && roomsState[currentRoom].isRoomFullyOpened) {
+        alert("❌ ไม่สามารถกลับหน้าหลักได้ เนื่องจากห้องดีลถูกปลดล็อคแล้ว ต้องดำเนินรายการให้เสร็จสิ้นครับ!");
+        return;
+      }
       document.getElementById('lobby-page').classList.add('hidden');
       document.getElementById('chat-page').classList.add('hidden');
       document.getElementById('dashboard-page').classList.remove('hidden');
@@ -525,7 +566,8 @@
       for (let i = 0; i < 6; i++) { code += chars.charAt(Math.floor(Math.random() * chars.length)); }
       currentRoom = code;
 
-      roomsState[code] = { isRoomFullyOpened: false, currentStep: 0, price: 0, messages: [], isCreator: true };
+      roomsState[code] = { isRoomFullyOpened: false, currentStep: 0, price: 0, messages: [], isCreator: true, savedRole: myRole };
+      localStorage.setItem(`room_${code}_myrole`, myRole);
       saveActiveRoomsToStorage();
       updateSidebarUI();
       goToChatScreen(code);
@@ -545,8 +587,9 @@
       if(code.length === 6) {
         currentRoom = code;
         if (!roomsState[code]) {
-          roomsState[code] = { isRoomFullyOpened: false, currentStep: 0, price: 0, messages: [], isCreator: false };
+          roomsState[code] = { isRoomFullyOpened: false, currentStep: 0, price: 0, messages: [], isCreator: false, savedRole: myRole };
         }
+        localStorage.setItem(`room_${code}_myrole`, myRole);
         saveActiveRoomsToStorage();
         updateSidebarUI();
         goToChatScreen(code);
@@ -595,7 +638,22 @@
       
       channel = supabaseClient.channel(`room_${roomCode}`);
       channel
-        .on('broadcast', { event: 'join_event' }, () => {
+        .on('broadcast', { event: 'check_occupancy' }, (res) => {
+          // ส่วนตรวจสอบจำนวนแอคเค้าท์ (สูงสุด 2 คน: ผู้ซื้อ 1 และ ผู้ขาย 1)
+          if (res.payload.role === myRole && res.payload.user !== myUsername) {
+            channel.send({ type: 'broadcast', event: 'reject_duplicate', payload: { targetUser: res.payload.user, role: myRole } });
+          }
+        })
+        .on('broadcast', { event: 'reject_duplicate' }, (res) => {
+          if (res.payload.targetUser === myUsername) {
+            alert(`❌ ไม่สามารถเข้าห้องนี้ได้ เนื่องจากมีบัญชีที่มีบทบาทเป็น [${res.payload.role === 'buyer' ? 'ผู้ซื้อ' : 'ผู้ขาย'}] ดำเนินการอยู่แล้วในห้องนี้ (จำกัดห้องละ 2 แอคเค้าท์เท่านั้น)`);
+            executeRoomClear(roomCode);
+          }
+        })
+        .on('broadcast', { event: 'join_event' }, (res) => {
+          // เมื่อมีคนเข้าห้อง ให้ตรวจสอบบทบาทเพื่อป้องกันการซ้อนกัน
+          channel.send({ type: 'broadcast', event: 'check_occupancy', payload: { role: myRole, user: myUsername } });
+          
           if (isCreator && !roomsState[roomCode].isRoomFullyOpened) {
             channel.send({ type: 'broadcast', event: 'sync_ready_signal', payload: {} });
             triggerFullRoomOpen(roomCode);
@@ -608,6 +666,7 @@
         })
         .on('broadcast', { event: 'propose_price_event' }, (res) => {
           roomsState[roomCode].price = res.payload.price;
+          localStorage.setItem(`room_${roomCode}_price`, res.payload.price);
           if (myRole === 'buyer') {
             document.getElementById('buyer-price-zone').classList.remove('hidden');
             document.getElementById('proposed-price-text').innerText = res.payload.price;
@@ -635,16 +694,17 @@
           alert(`🔒 ห้องดีล [ROOM: ${roomCode}] ถูกปิดตัวลงแล้ว ระบบจะนำคุณออกจากเซสชัน`);
           executeRoomClear(roomCode);
         })
-        .on('broadcast', { event: 'msg_event' }, (response) => { appendMessage(response.payload.text, 'left', response.payload.senderRole); })
+        .on('broadcast', { event: 'msg_event' }, (res) => { appendMessage(res.payload.text, 'left', res.payload.senderRole); })
         .subscribe((status) => {
-          if (status === 'SUBSCRIBED' && !isCreator) {
-            channel.send({ type: 'broadcast', event: 'join_event', payload: { role: myRole } });
+          if (status === 'SUBSCRIBED') {
+            channel.send({ type: 'broadcast', event: 'join_event', payload: { role: myRole, user: myUsername } });
           }
         });
     }
 
     function triggerFullRoomOpen(roomCode) {
       roomsState[roomCode].isRoomFullyOpened = true;
+      localStorage.setItem(`room_${roomCode}_opened`, "true"); // เซฟสถานะปลดล็อคลง Storage ล็อกไว้ตายตัว
       updateSidebarUI();
       rebuildOpenedRoomUI(roomCode);
     }
@@ -659,6 +719,11 @@
       
       document.getElementById('mission-timeline').classList.remove('opacity-40', 'pointer-events-none');
       
+      // เมื่อห้องปลดล็อคแล้ว -> ซ่อนปุ่มลบ/ปิดห้อง/ปุ่มกากบาท และปุ่มส่งลิงก์เชิญ ทันที! เพื่อความปลอดภัยสูงสุด
+      document.getElementById('close-room-btn').classList.add('hidden');
+      document.getElementById('leave-room-btn').classList.add('hidden');
+      document.getElementById('copy-link-zone').classList.add('hidden');
+
       const waitNotice = document.getElementById('lobby-wait-notice');
       if(waitNotice) {
         waitNotice.className = "bg-[#30d5c8]/10 text-[#30d5c8] text-[11px] px-4 py-2 rounded-md border border-[#30d5c8]/30 animate-none";
@@ -682,6 +747,7 @@
       if (!priceVal || priceVal <= 0) { alert("กรุณากรอกจำนวนเงินราคาซื้อขายที่ถูกต้องครับ"); return; }
       
       roomsState[currentRoom].price = priceVal;
+      localStorage.setItem(`room_${currentRoom}_price`, priceVal);
       document.getElementById('seller-price-zone').classList.add('hidden');
       document.getElementById('step-1-status').innerText = `⏳ ส่งข้อเสนอราคา ${priceVal} บาทเรียบร้อย รอผู้ซื้อตอบรับ...`;
       
@@ -707,6 +773,7 @@
 
     function updateMissionUI(step) {
       roomsState[currentRoom].currentStep = step;
+      localStorage.setItem(`room_${currentRoom}_step`, step); // บันทึก Process ปัจจุบันลง Storage ทันที
       const targetPrice = roomsState[currentRoom].price;
 
       if (step === 1) {
@@ -754,6 +821,11 @@
         document.getElementById('check-4').className = "w-6 h-6 rounded-md font-bold flex items-center justify-center text-xs text-black bg-[#30d5c8]";
         document.getElementById('step-4').className = "mission-step p-4 bg-[#30d5c8]/10 border border-[#30d5c8] rounded-xl flex flex-col gap-3 cyber-glow";
         document.getElementById('buyer-confirm-zone').classList.add('hidden');
+        
+        // เมื่อจบภารกิจสำเร็จอย่างสมบูรณ์แบบ ให้สิทธิ์การลบห้องและออกจากหน้าแชทกลับมาได้
+        document.getElementById('close-room-btn').classList.remove('hidden');
+        document.getElementById('leave-room-btn').classList.remove('hidden');
+        
         systemNotice(`🎉 [MISSION COMPLETED] ดีลนี้สำเร็จเสร็จสิ้นสมบูรณ์แบบ เงินจำนวน ${targetPrice} บาท พร้อมทำการโอนออกจากระบบกลางเข้าสู่บัญชีของผู้ขายทันที!`);
       }
     }
