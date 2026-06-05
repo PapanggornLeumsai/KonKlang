@@ -52,6 +52,10 @@
       <h1 class="text-3xl font-black text-white mb-1 tracking-wide">KONKLANG</h1>
       <p id="auth-title" class="text-xs text-[#a1a1aa] mb-6">เข้าสู่ระบบเพื่อใช้งานระบบซื้อขายออนไลน์</p>
       
+      <div id="invite-alert" class="hidden mb-4 p-2.5 rounded-lg text-xs bg-[#0071e3]/10 border border-[#0071e3]/30 text-[#0071e3] font-bold">
+        📥 ล็อกอินเพื่อเข้าร่วมห้องดีลอัตโนมัติค้างไว้
+      </div>
+
       <div class="space-y-4 text-left mb-5">
         <div>
           <label class="text-xs font-bold text-[#a1a1aa] uppercase tracking-wider block mb-2">ชื่อผู้ใช้งาน (User)</label>
@@ -142,18 +146,28 @@
   </div>
 
   <div id="chat-page" class="hidden min-h-screen pt-16 p-4 max-w-7xl mx-auto flex flex-col lg:flex-row gap-6 h-[calc(100vh-4rem)] overflow-hidden">
+    
     <div class="w-full lg:w-[450px] cyber-panel rounded-xl p-5 flex flex-col justify-between shadow-2xl overflow-y-auto">
       <div>
-        <div class="flex justify-between items-center border-b border-[#27272a] pb-3 mb-4">
-          <h3 class="text-sm font-bold text-white uppercase tracking-wider">ขั้นตอนกลาง (ROOM: <span id="chat-room-id" class="font-mono text-[#0071e3]"></span>)</h3>
-          <span id="price-tag" class="text-base font-black text-[#30d5c8] bg-[#30d5c8]/10 px-3 py-1 rounded-md border border-[#30d5c8]/20">0 THB</span>
+        <div class="border-b border-[#27272a] pb-3 mb-4">
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="text-xs font-bold text-[#a1a1aa] uppercase tracking-wider">ห้องดีลกลางระบบ</h3>
+            <button onclick="leaveRoom()" class="text-[11px] bg-red-600/10 border border-red-600/30 text-red-500 font-bold px-2.5 py-1 rounded-md hover:bg-red-600/20 transition-all">
+              🚪 ออกจากห้อง
+            </button>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm font-bold text-white font-mono">ROOM: <span id="chat-room-id" class="text-[#0071e3]"></span></span>
+            <span id="price-tag" class="text-base font-black text-[#30d5c8] bg-[#30d5c8]/10 px-3 py-1 rounded-md border border-[#30d5c8]/20">0 THB</span>
+          </div>
         </div>
+
         <div class="space-y-4">
           <div id="step-1" class="mission-step p-4 bg-[#09090b] border border-[#0071e3] rounded-xl flex items-start gap-3 cyber-glow">
             <div id="check-1" class="w-6 h-6 rounded-md font-bold flex items-center justify-center text-xs text-white bg-[#0071e3]">1</div>
             <div>
               <h4 class="text-xs font-bold text-white">ขั้นตอนที่ 1: ตั้งราคาและจับคู่ดีล</h4>
-              <p class="text-[11px] text-[#a1a1aa] mt-0.5">จับคู่ผู้ซื้อและผู้ขายสำเร็จ</p>
+              <p class="text-[11px] text-[#a1a1aa] mt-0.5">เชื่อมต่อผ่านรหัสของบัญชีจริงสำเร็จ</p>
             </div>
           </div>
           <div id="step-2" class="mission-step p-4 bg-[#09090b] border border-[#27272a] rounded-xl flex flex-col gap-3">
@@ -184,7 +198,7 @@
                 <h4 class="text-xs font-bold text-white">ขั้นตอนที่ 4: ผู้ซื้อตรวจสอบและยืนยันรับของ</h4>
                 <div id="buyer-confirm-zone" class="hidden mt-3 flex flex-col gap-2">
                   <button id="btn-confirm-1" onclick="confirmReceipt(1)" class="bg-[#ff9f0a] text-white px-4 py-2 rounded-md text-[11px] font-bold">⚠️ ตรวจสอบรหัสแล้ว (ยืนยันรอบที่ 1)</button>
-                  <button id="btn-confirm-2" onclick="confirmReceipt(2)" class="hidden bg-[#30d5c8] text-black px-4 py-2 rounded-md text-[11px] font-black">✅ เปลี่ยนรหัสผ่านเรียบร้อย (ยืนยันรอบที่ 2)</button>
+                  <button id="btn-confirm-2" onclick="hidden bg-[#30d5c8] text-black px-4 py-2 rounded-md text-[11px] font-black">✅ เปลี่ยนรหัสผ่านเรียบร้อย (ยืนยันรอบที่ 2)</button>
                 </div>
               </div>
             </div>
@@ -216,38 +230,58 @@
     let myUsername = "";
     let isRegisterMode = false;
 
-    // เช็คสถานะการล็อกอินเดิมที่มีอยู่ในเครื่องค้างไว้ (Auto Login)
+    // ระบบตรวจเช็คลิงก์และการล็อกอิน
     window.onload = async function() {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      
-      if (session) {
-        // ดึงชื่อ user จาก email หลอกที่เคยทำไว้
-        myUsername = session.user.email.split('@')[0];
-        showDashboardView(myUsername);
-      }
-
+      // 1. เช็คพารามิเตอร์ลิงก์เชิญที่เพื่อนส่งมา
       const urlParams = new URLSearchParams(window.location.search);
       const inviteRoom = urlParams.get('room');
       const inviteRole = urlParams.get('role');
 
       if (inviteRoom && inviteRole) {
-        if(!myUsername) {
-          myUsername = "Guest_" + Math.floor(Math.random() * 9000 + 1000);
-        }
+        // บันทึกเก็บค่าห้องดีลนี้ลงหน่วยความจำชั่วคราวของบราวเซอร์ก่อน
+        localStorage.setItem('pendingRoom', inviteRoom);
+        localStorage.setItem('pendingRole', inviteRole);
+        document.getElementById('invite-alert').classList.remove('hidden');
+      }
+
+      // 2. เช็ค Session เดิมในเครื่องจากฐานข้อมูลจริง
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      
+      if (session) {
+        myUsername = session.user.email.split('@')[0];
         showDashboardView(myUsername);
         
-        myRole = inviteRole;
+        // ถ้าล็อกอินสำเร็จแล้ว และพบว่าเคยมีประวัติเปิดลิงก์เชิญห้องทิ้งไว้ ให้ข้ามไปเข้าห้องโดยอัตโนมัติทันที
+        checkAndRedirectToPendingRoom();
+      }
+    };
+
+    // ฟังก์ชันช่วยพาเข้าห้องดีลที่ค้างไว้หลังจากเจ้าตัวล็อกอินสำเร็จ (ไม่ใช่ Guest)
+    function checkAndRedirectToPendingRoom() {
+      const savedRoom = localStorage.getItem('pendingRoom');
+      const savedRole = localStorage.getItem('pendingRole');
+
+      if (savedRoom && savedRole && myUsername) {
+        myRole = savedRole;
         document.getElementById('role-tag').innerText = myRole === 'buyer' ? 'ผู้ซื้อ 🛒' : 'ผู้ขาย 💰';
         document.getElementById('role-tag').classList.remove('hidden');
 
-        currentRoom = inviteRoom;
-        listenToRoom(inviteRoom, false);
+        currentRoom = savedRoom;
+        
+        // ล้างประวัติเพื่อไม่ให้เด้งซ้ำซ้อนรอบหน้า
+        localStorage.removeItem('pendingRoom');
+        localStorage.removeItem('pendingRole');
+        
+        // ลบ Query Parameters บนหน้าแถบ URL เว็บบนเบราว์เซอร์ให้สะอาด
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        listenToRoom(savedRoom, false);
         
         setTimeout(() => {
           channel.send({ type: 'broadcast', event: 'join_event', payload: { role: myRole } });
         }, 1200);
       }
-    };
+    }
 
     function toggleAuthMode() {
       isRegisterMode = !isRegisterMode;
@@ -272,7 +306,7 @@
       }
     }
 
-    // ฟังก์ชันเชื่อมโยงระบบ Auth ไปหาฐานข้อมูล Supabase ของจริง
+    // ฟังก์ชันเชื่อมโยงระบบ Auth เข้าฐานข้อมูลจริง Supabase
     async function handleAuthSubmit() {
       const user = document.getElementById('login-username').value.trim();
       const pass = document.getElementById('login-password').value.trim();
@@ -283,11 +317,10 @@
         return;
       }
       if (pass.length < 6) {
-        alert("รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษรขึ้นไปตามกฎความปลอดภัยของระบบจริงครับ");
+        alert("รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษรขึ้นไปบนตารางความปลอดภัยของระบบครับ");
         return;
       }
 
-      // แปลงค่า username ให้เป็นรูปแบบ email หลอกสำหรับลงฐานข้อมูล Supabase Auth
       const fakeEmail = `${user}@konklang.local`;
 
       if (isRegisterMode) {
@@ -296,7 +329,6 @@
           return;
         }
         
-        // ส่งคำขอลงทะเบียนเข้า Supabase จริงๆ
         const { data, error } = await supabaseClient.auth.signUp({
           email: fakeEmail,
           password: pass,
@@ -306,9 +338,8 @@
           alert("ไม่สามารถลงทะเบียนได้: " + error.message);
           return;
         }
-        alert("🎉 สมัครสมาชิกบนฐานข้อมูลสำเร็จแล้ว! กำลังเข้าสู่ระบบ...");
+        alert("🎉 สมัครสมาชิกบนบัญชีจริงสำเร็จ! ระบบกำลังพาล็อกอิน...");
       } else {
-        // ส่งคำขอเข้าสู่ระบบจริง ตรวจสอบความถูกต้องของรหัสผ่าน
         const { data, error } = await supabaseClient.auth.signInWithPassword({
           email: fakeEmail,
           password: pass,
@@ -322,12 +353,30 @@
 
       myUsername = user;
       showDashboardView(user);
+      
+      // หลังจากตรวจสอบสิทธิ์ผ่านแล้ว ให้มาเช็คต่อว่ามีคิวห้องที่เปิดค้างไว้จากลิงก์เชิญหรือไม่
+      checkAndRedirectToPendingRoom();
     }
 
-    // ฟังก์ชันเพิ่มปุ่มล็อกเอาท์ล้าง Session
     async function handleLogout() {
       await supabaseClient.auth.signOut();
+      localStorage.removeItem('pendingRoom');
+      localStorage.removeItem('pendingRole');
       location.reload(); 
+    }
+
+    // ฟังก์ชันกดย้ายออกจากห้องแชท (Leave Room) พากลับมาหน้าควบคุมหลัก
+    function leaveRoom() {
+      if(confirm("คุณต้องการออกจากห้องซื้อขายกึ่งกลางนี้ใช่หรือไม่? (ความคืบหน้าจะคงอยู่บนเซิร์ฟเวอร์กลาง)")) {
+        if (channel) {
+          channel.unsubscribe();
+          channel = null;
+        }
+        currentRoom = "";
+        document.getElementById('chat-page').classList.add('hidden');
+        document.getElementById('role-tag').classList.add('hidden');
+        document.getElementById('dashboard-page').classList.remove('hidden');
+      }
     }
 
     function showDashboardView(username) {
@@ -412,7 +461,7 @@
       const inviteUrl = `${window.location.origin}${window.location.pathname}?room=${currentRoom}&role=${oppositeRole}`;
       
       navigator.clipboard.writeText(inviteUrl).then(() => {
-        alert("🔗 คัดลอกลิงก์เชิญส่งดีลให้เพื่อนเรียบร้อยแล้ว!");
+        alert("🔗 คัดลอกลิงก์เชิญส่งดีลให้เพื่อนเรียบร้อยแล้ว! เมื่อเพื่อนคลิกลิงก์ระบบจะบังคับล็อกอินบัญชีหลักของเขาก่อนเข้าห้องดีลนี้");
       }).catch(err => {
         alert("ไม่สามารถคัดลอกลิงก์ได้ กรุณาส่งรหัสห้อง 6 หลักให้แทนครับ: " + currentRoom);
       });
