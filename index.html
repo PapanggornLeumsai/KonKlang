@@ -78,18 +78,23 @@
   </div>
 
   <script>
-    // ⚠️ สำคัญมาก: เอาข้อมูลจากข้อ 1 มาวางใส่ตรงนี้แทนคำภาษาไทยครับ
-    const SUPABASE_URL = "https://gcsbhuxfsulfqlhqnjvp.supabase.co/rest/v1/"; 
-    const SUPABASE_KEY = "sb_publishable_6WZ0cWyMfARA4DSSDAlxgA_IzYR6wIu";
+  // ⚠️ ใส่ข้อมูล Supabase ของคุณเหมือนเดิมครับ
+    const SUPABASE_URL = "https://gcsbhuxfsulfqlhqnjvp.supabase.co"; 
+    const SUPABASE_KEY = "วาง KEY Publishable ของคุณตรงนี้";
     
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let currentRoom = "";
     let channel = null;
 
+    // 1. ฟังก์ชันสำหรับ "คนสร้างห้อง"
     function createRoom() {
-      let code = Math.random().toString(36).substring(2, 8).toUpperCase();
+      // สุ่มรหัสห้อง 6 หลัก
+      let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let code = '';
+      for (let i = 0; i < 6; i++) { code += chars.charAt(Math.floor(Math.random() * chars.length)); }
       currentRoom = code;
       
+      // ปรับหน้าจอแสดงรหัสห้องสไตล์ Apple
       document.getElementById('join-box').classList.add('hidden');
       document.getElementById('lobby-grid').className = "w-full max-w-md";
       document.getElementById('btn-create').classList.add('hidden');
@@ -98,54 +103,80 @@
       document.getElementById('generated-code').innerText = code;
       document.getElementById('code-display').classList.remove('hidden');
 
-      listenToRoom(code);
+      // คนสร้างห้องเปิดท่อรอรับสัญญาณ
+      listenToRoom(code, true);
     }
 
+    // 2. ฟังก์ชันสำหรับ "คนจอยห้อง"
     function joinRoom() {
       let code = document.getElementById('room-input').value.trim().toUpperCase();
       if(code.length === 6) {
         currentRoom = code;
-        listenToRoom(code);
-        // ส่งสัญญาณบอกคนสร้างห้องว่าเราเข้ามาแล้ว
+        // คนจอยเปิดท่อรับสัญญาณ
+        listenToRoom(code, false);
+        
+        // รอแป๊บนึงให้ท่อเชื่อมเสร็จ แล้วส่งสัญญาณบอกคนสร้างห้องว่า "ฉันมาแล้วนะ!"
         setTimeout(() => {
-          channel.send({ type: 'broadcast', event: 'join', payload: {} });
-          openChatView(code);
-        }, 1000);
+          channel.send({ type: 'broadcast', event: 'join_event', payload: {} });
+          openChatView(code); // คนจอยตัดเข้าหน้าแชททันที
+        }, 800);
+      } else {
+        alert("กรุณากรอกรหัสห้องให้ครบ 6 หลักครับ");
       }
     }
 
-    function listenToRoom(roomCode) {
+    // 3. ระบบเปิดท่อส่งข้อมูลเรียลไทม์ (แก้ไขบั๊กตรงนี้)
+    function listenToRoom(roomCode, isCreator) {
       channel = supabaseClient.channel(`room_${roomCode}`);
       
       channel
-        .on('broadcast', { event: 'join' }, () => {
-          openChatView(roomCode);
+        .on('broadcast', { event: 'join_event' }, () => {
+          // ถ้าเราเป็นคนสร้างห้อง แล้วได้ยินสัญญาณ 'join_event' ให้ตัดเข้าหน้าแชทตามไปทันที!
+          if (isCreator) {
+            openChatView(roomCode);
+          }
         })
-        .on('broadcast', { event: 'msg' }, (response) => {
-          document.getElementById('chat-messages').innerHTML += `<div class="flex justify-start"><div class="bg-[#333336] text-[#f5f5f7] max-w-xs rounded-2xl rounded-tl-none px-4 py-2 text-sm font-light">${response.payload.text}</div></div>`;
-          let box = document.getElementById('chat-messages'); box.scrollTop = box.scrollHeight;
+        .on('broadcast', { event: 'msg_event' }, (response) => {
+          // ได้รับข้อความจากอีกฝั่ง -> เอามาแสดงบนหน้าจอ
+          document.getElementById('chat-messages').innerHTML += `
+            <div class="flex justify-start">
+              <div class="bg-[#333336] text-[#f5f5f7] max-w-xs rounded-2xl rounded-tl-none px-4 py-2 text-sm font-light">
+                ${response.payload.text}
+              </div>
+            </div>`;
+          let box = document.getElementById('chat-messages'); 
+          box.scrollTop = box.scrollHeight;
         })
         .subscribe();
     }
 
+    // 4. ฟังก์ชันเปิดหน้าต่างแชท
     function openChatView(code) {
       document.getElementById('lobby-page').classList.add('hidden');
       document.getElementById('chat-page').classList.remove('hidden');
       document.getElementById('chat-room-id').innerText = code;
     }
 
+    // 5. ฟังก์ชันส่งข้อความ
     function sendMessage() {
       let input = document.getElementById('chat-input');
       let text = input.value.trim();
       if (!text) return;
       
-      document.getElementById('chat-messages').innerHTML += `<div class="flex justify-end"><div class="bg-[#0071e3] text-white max-w-xs rounded-2xl rounded-tr-none px-4 py-2 text-sm font-light">${text}</div></div>`;
+      // แสดงข้อความฝั่งตัวเอง (สีฟ้า iMessage)
+      document.getElementById('chat-messages').innerHTML += `
+        <div class="flex justify-end">
+          <div class="bg-[#0071e3] text-white max-w-xs rounded-2xl rounded-tr-none px-4 py-2 text-sm font-light">
+            ${text}
+          </div>
+        </div>`;
       
-      // ส่งสัญญาณแชทข้ามอินเทอร์เน็ตจริงผ่านท่อ Supabase
-      channel.send({ type: 'broadcast', event: 'msg', payload: { text: text } });
+      // ส่งข้อความออกไปในท่อ Supabase ข้ามอินเทอร์เน็ต
+      channel.send({ type: 'broadcast', event: 'msg_event', payload: { text: text } });
       
       input.value = "";
-      let box = document.getElementById('chat-messages'); box.scrollTop = box.scrollHeight;
+      let box = document.getElementById('chat-messages'); 
+      box.scrollTop = box.scrollHeight;
     }
   </script>
 </body>
