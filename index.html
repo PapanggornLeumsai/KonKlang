@@ -593,7 +593,6 @@
       document.getElementById('chat-page').classList.remove('hidden');
       document.getElementById('chat-room-id').innerText = code;
       
-      // บังคับแสดงกล่องและปุ่มยืนยันความพร้อมทันทีเมื่อเปิดหน้าจอ
       document.getElementById('ready-status-box').classList.remove('hidden');
       updateReadyUI();
     }
@@ -692,20 +691,7 @@
       
       channel = supabaseClient.channel(`room_${roomCode}`);
       channel
-        .on('broadcast', { event: 'check_occupancy' }, (res) => {
-          if (res.payload.role === myRole && res.payload.user !== myUsername) {
-            channel.send({ type: 'broadcast', event: 'reject_duplicate', payload: { targetUser: res.payload.user, role: myRole } });
-          }
-        })
-        .on('broadcast', { event: 'reject_duplicate' }, (res) => {
-          if (res.payload.targetUser === myUsername) {
-            alert(`❌ ไม่สามารถเข้าห้องนี้ได้ เนื่องจากมีบัญชีบทบาท [${res.payload.role === 'buyer' ? 'ผู้ซื้อ' : 'ผู้ขาย'}] ดำเนินรายการอยู่แล้ว (จำกัดห้องละ 2 แอคเค้าท์เท่านั้น)`);
-            executeRoomClear(roomCode);
-          }
-        })
         .on('broadcast', { event: 'join_event' }, (res) => {
-          channel.send({ type: 'broadcast', event: 'check_occupancy', payload: { role: myRole, user: myUsername } });
-          
           const state = roomsState[roomCode];
           if (state) {
             channel.send({
@@ -721,11 +707,10 @@
         .on('broadcast', { event: 'ready_status_sync' }, (res) => {
           const state = roomsState[roomCode];
           if (state) {
-            if (myRole === 'buyer') {
-              state.sellerReady = res.payload.sellerReady;
-            } else if (myRole === 'seller') {
-              state.buyerReady = res.payload.buyerReady;
-            }
+            // ซิงค์สเตทความพร้อมของทั้งสองฝั่งเข้าหากันแบบ Realtime
+            state.buyerReady = res.payload.buyerReady;
+            state.sellerReady = res.payload.sellerReady;
+            
             localStorage.setItem(`room_${roomCode}_buyer_ready`, state.buyerReady);
             localStorage.setItem(`room_${roomCode}_seller_ready`, state.sellerReady);
             updateReadyUI();
@@ -794,7 +779,6 @@
       
       document.getElementById('mission-timeline').classList.remove('opacity-40', 'pointer-events-none');
       
-      // ซ่อนปุ่มปิดดีลถาวรตามที่ระบุไว้ / ปุ่มกากบาทแสดงไว้ปกติ
       document.getElementById('close-room-btn').classList.add('hidden');
       document.getElementById('copy-link-zone').classList.add('hidden');
       document.getElementById('ready-status-box').classList.add('hidden');
