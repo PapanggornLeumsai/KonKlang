@@ -25,7 +25,7 @@
         <div class="text-base font-bold tracking-wider text-[#0071e3] drop-shadow-[0_0_10px_rgba(0,113,227,0.5)] cursor-pointer" onclick="goHome()">KONKLANG</div>
       </div>
       <div class="flex items-center gap-3">
-        <div class="text-xs text-[#a1a1aa] font-medium bg-[#18181b] px-3 py-1 rounded-md border border-[#27272a]">ระบบกลางซื้อขายไอดีเกม 1v1</div>
+        <div class="text-xs text-[#a1a1aa] font-medium bg-[#18181b] px-3 py-1 rounded-md border border-[#27272a]">ระบบซื้อขายออนไลน์กลาง</div>
         <div id="username-tag" class="text-xs bg-[#27272a] px-2.5 py-1 rounded-md text-white font-medium hidden"></div>
         <div id="role-tag" class="text-xs bg-[#0071e3]/20 border border-[#0071e3]/40 px-2.5 py-1 rounded-md text-[#0071e3] font-medium hidden"></div>
         <button id="logout-btn" onclick="handleLogout()" class="text-xs bg-red-600/10 border border-red-600/30 px-2.5 py-1 rounded-md text-red-500 font-medium hidden hover:bg-red-600/20">ออกจากระบบ</button>
@@ -54,7 +54,7 @@
   <div id="login-page" class="min-h-screen flex flex-col items-center justify-center px-4">
     <div class="w-full max-w-sm cyber-panel p-8 rounded-xl shadow-2xl text-center">
       <h1 class="text-3xl font-black text-white mb-1 tracking-wide">KONKLANG</h1>
-      <p id="auth-title" class="text-xs text-[#a1a1aa] mb-6">เข้าสู่ระบบด้วยชื่อผู้ใช้งานเพื่อเริ่มทำรายการ</p>
+      <p id="auth-title" class="text-xs text-[#a1a1aa] mb-6">เข้าสู่ระบบเพื่อใช้งานระบบซื้อขายออนไลน์</p>
       
       <div id="invite-alert" class="hidden mb-4 p-2.5 rounded-lg text-xs bg-[#0071e3]/10 border border-[#0071e3]/30 text-[#0071e3] font-bold animate-pulse">
         📥 ตรวจพบลิงก์เชิญเข้าห้องดีล! เข้าสู่ระบบเสร็จจะพาท่านเข้าห้องทันที
@@ -96,17 +96,17 @@
   <div id="dashboard-page" class="hidden min-h-screen flex flex-col items-center justify-center px-4">
     <div class="text-center max-w-md">
       <h1 class="text-5xl font-black text-white tracking-wider mb-2">KONKLANG</h1>
-      <p class="text-sm text-[#0071e3] font-bold uppercase tracking-widest mb-8">ระบบกลางซื้อขายไอดีเกมสไตล์ Apple ออนไลน์จริง</p>
+      <p class="text-sm text-[#0071e3] font-bold uppercase tracking-widest mb-8">ระบบซื้อขายออนไลน์กึ่งกลางปลอดภัย</p>
       <button onclick="startNewDeal()" class="bg-[#0071e3] hover:bg-[#147ce5] text-white font-black py-4 px-12 rounded-lg text-sm uppercase tracking-widest transition-all shadow-xl">
-        🚀 เริ่มซื้อขายใหม่ (1v1)
+        🚀 เริ่มซื้อขายใหม่
       </button>
     </div>
   </div>
 
   <div id="lobby-page" class="hidden min-h-screen flex flex-col items-center justify-center pt-16 px-4">
     <div class="text-center mb-6 max-w-xl relative w-full">
-      <h1 class="text-3xl font-black text-white tracking-tight mb-1">KONKLANG</h1>
-      <p class="text-sm text-[#0071e3] font-semibold uppercase">ระบบกลางซื้อขายไอดีเกมสไตล์ Apple ออนไลน์จริง</p>
+      <h1 class="text-3xl font-black text-white tracking-tight mb-2">KONKLANG</h1>
+      <p class="text-sm text-[#0071e3] font-semibold uppercase">เลือกบทบาทและสร้างห้องหรือเข้าร่วมดีล</p>
       <button onclick="goHome()" class="absolute top-0 right-4 text-xl text-[#a1a1aa] hover:text-white p-1">✕</button>
     </div>
 
@@ -126,34 +126,24 @@
 
     <div id="lobby-grid" class="opacity-20 pointer-events-none grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl transition-all duration-300">
       
-      <div id="create-box" class="cyber-panel p-5 rounded-xl text-center flex flex-col justify-between min-h-[240px] shadow-2xl relative">
+      <div id="create-box" class="cyber-panel p-5 rounded-xl text-center flex flex-col justify-between min-h-[200px] shadow-2xl">
         <div>
-          <h2 class="text-sm font-bold text-white mb-1">เริ่มต้นดีลใหม่</h2>
-          <p class="text-[11px] text-[#a1a1aa] mb-3">ระบบสร้างรหัสห้องนิมนามเพื่อใช้เชิญคู่กรณีของคุณ</p>
+          <h2 class="text-sm font-bold text-white mb-1">สร้างห้องดีลใหม่</h2>
+          <p class="text-[11px] text-[#a1a1aa] mb-4">ระบบจะทำการสุ่มเลขห้องกลางที่ปลอดภัยให้คุณและคู่ค้า</p>
         </div>
-        
-        <div class="p-3 bg-[#09090b] rounded-lg border border-[#27272a] cyber-glow flex flex-col gap-2">
-          <div>
-            <p class="text-[10px] text-[#a1a1aa] mb-0.5 font-medium">รหัสห้องสุ่มของคุณ</p>
-            <p id="generated-code" class="text-2xl font-mono font-black text-[#0071e3] tracking-widest">XXXXXX</p>
-          </div>
-          
-          <button onclick="copyInviteLink()" class="w-full bg-[#0071e3] hover:bg-[#147ce5] text-white py-2 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md">
-            🔗 คัดลอกลิงก์เชิญคู่ค้า
-          </button>
-        </div>
-
-        <p class="text-[10px] text-[#ff9f0a] font-medium animate-pulse mt-2">⏳ ระบบฟังเสียงรออีกฝ่ายเชื่อมต่อเข้ามาในห้องนี้อัตโนมัติ...</p>
+        <button onclick="createNewRoom()" class="bg-[#0071e3] hover:bg-[#147ce5] text-white font-bold py-3 px-6 rounded-lg w-full text-xs uppercase tracking-wider transition-colors shadow-lg">
+          🎲 สุ่มรหัสและเปิดห้องดีล
+        </button>
       </div>
 
-      <div id="join-box" class="cyber-panel p-5 rounded-xl text-center flex flex-col justify-between min-h-[240px] shadow-2xl">
+      <div id="join-box" class="cyber-panel p-5 rounded-xl text-center flex flex-col justify-between min-h-[200px] shadow-2xl">
         <div>
           <h2 class="text-sm font-bold text-white mb-1">เข้าร่วมห้องที่มีอยู่</h2>
-          <p class="text-[11px] text-[#a1a1aa] mb-4">กรอกรหัสผ่าน 6 หลักที่ได้รับจากเพื่อนเพื่อเข้าสู่ระบบแชทจริง</p>
+          <p class="text-[11px] text-[#a1a1aa] mb-4">กรอกรหัสผ่าน 6 หลักที่ได้จากคู่ค้าเพื่อล็อกอินเข้าทำรายการ</p>
         </div>
         <div>
           <input id="room-input" type="text" maxlength="6" placeholder="รหัสห้อง 6 หลัก" class="bg-[#09090b] border border-[#27272a] rounded-lg p-2.5 w-full text-center font-mono text-base uppercase tracking-widest text-white font-bold focus:outline-none focus:border-[#0071e3]">
-          <button id="btn-join" onclick="joinRoom()" class="bg-[#27272a] hover:bg-[#3f3f46] text-white font-bold py-2.5 px-6 rounded-lg w-full text-xs uppercase tracking-wider mt-4 transition-colors">เข้าร่วมห้อง</button>
+          <button id="btn-join" onclick="joinRoom()" class="bg-[#27272a] hover:bg-[#3f3f46] text-white font-bold py-2.5 px-6 rounded-lg w-full text-xs uppercase tracking-wider mt-4 transition-colors">เข้าร่วมดีล</button>
         </div>
       </div>
     </div>
@@ -166,23 +156,26 @@
           <div class="flex justify-between items-center mb-2">
             <h3 class="text-xs font-bold text-[#a1a1aa] uppercase tracking-wider">ห้องดีลกลางระบบ</h3>
             <div class="flex items-center gap-3">
-              <button onclick="closeRoomPermanently()" class="text-[11px] bg-amber-500/10 border border-amber-500/30 text-amber-500 font-bold px-2 py-0.5 rounded hover:bg-amber-500/20 transition-all">🔒 ปิดดีลถาวร</button>
-              <button onclick="leaveRoom()" class="text-lg font-bold text-[#a1a1aa] hover:text-white flex items-center">✕</button>
+              <button onclick="closeRoomPermanently()" class="text-[11px] bg-amber-500/10 border border-amber-500/30 text-amber-500 font-bold px-2 py-0.5 rounded hover:bg-amber-500/20 transition-all">
+                🔒 ปิดดีลถาวร
+              </button>
+              <button onclick="leaveRoom()" class="text-lg font-bold text-[#a1a1aa] hover:text-white px-1">✕</button>
             </div>
           </div>
           
           <div class="flex justify-between items-start gap-2">
-            <div class="flex flex-col gap-1.5">
+            <div class="flex flex-col gap-2 w-full max-w-[200px]">
               <span class="text-sm font-bold text-white font-mono">ROOM: <span id="chat-room-id" class="text-[#0071e3]">XXXXXX</span></span>
-              <button onclick="copyInviteLink()" class="bg-[#18181b] border border-[#27272a] hover:border-[#0071e3] text-[#a1a1aa] hover:text-white text-[10px] py-1 px-2 rounded font-medium flex items-center gap-1 transition-all">
-                🔗 คัดลอกลิงก์เชิญส่งซ้ำ
+              
+              <button id="chat-copy-btn" onclick="copyInviteLink()" class="w-full bg-[#0071e3] hover:bg-[#147ce5] text-white py-1.5 px-3 rounded text-[11px] font-bold uppercase flex items-center justify-center gap-1 transition-all shadow-md">
+                🔗 คัดลอกลิงก์เชิญคู่ค้า
               </button>
             </div>
-            <span id="price-tag" class="text-sm font-black text-[#30d5c8] bg-[#30d5c8]/10 px-2.5 py-1 rounded-md border border-[#30d5c8]/20 whitespace-nowrap">คุยรายละเอียดราคาในแชท</span>
+            <span id="price-tag" class="text-xs font-black text-[#30d5c8] bg-[#30d5c8]/10 px-2.5 py-2 rounded-md border border-[#30d5c8]/20 whitespace-nowrap">คุยรายละเอียดราคาในแชท</span>
           </div>
         </div>
 
-        <div id="mission-timeline" class="space-y-4 opacity-40 pointer-events-none">
+        <div id="mission-timeline" class="space-y-4 opacity-40 pointer-events-none transition-all duration-300">
           <div id="step-1" class="mission-step p-4 bg-[#09090b] border border-[#27272a] rounded-xl flex items-start gap-3">
             <div id="check-1" class="w-6 h-6 rounded-md font-bold border border-[#27272a] flex items-center justify-center text-xs text-[#a1a1aa] bg-[#18181b]">1</div>
             <div>
@@ -272,7 +265,7 @@
         link.innerText = "เข้าสู่ระบบที่นี่";
         confirmBox.classList.remove('hidden');
       } else {
-        title.innerText = "เข้าสู่ระบบด้วยชื่อผู้ใช้งานเพื่อเริ่มทำรายการ";
+        title.innerText = "เข้าสู่ระบบเพื่อใช้งานระบบซื้อขายออนไลน์";
         btn.innerText = "เข้าสู่ระบบ";
         desc.innerText = "ยังไม่มีบัญชีในระบบใช่หรือไม่?";
         link.innerText = "สร้างบัญชีใหม่";
@@ -405,14 +398,6 @@
       document.getElementById('dashboard-page').classList.add('hidden');
       document.getElementById('sidebar').classList.add('-translate-x-full');
       document.getElementById('room-input').value = "";
-      
-      let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      let code = '';
-      for (let i = 0; i < 6; i++) { code += chars.charAt(Math.floor(Math.random() * chars.length)); }
-      currentRoom = code;
-      document.getElementById('generated-code').innerText = code;
-      document.getElementById('chat-room-id').innerText = code;
-
       document.getElementById('lobby-page').classList.remove('hidden');
     }
 
@@ -431,19 +416,27 @@
       document.getElementById('lobby-grid').classList.remove('opacity-20', 'pointer-events-none');
       document.getElementById('btn-role-buyer').className = role === 'buyer' ? 'border-2 border-[#0071e3] bg-[#0071e3]/10 p-4 rounded-lg flex flex-col items-center gap-2 transition-all' : 'border border-[#27272a] opacity-40 bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all';
       document.getElementById('btn-role-seller').className = role === 'seller' ? 'border-2 border-[#0071e3] bg-[#0071e3]/10 p-4 rounded-lg flex flex-col items-center gap-2 transition-all' : 'border border-[#27272a] opacity-40 bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all';
+    }
 
-      updateSidebarActiveRoom(currentRoom);
-      listenToRoom(currentRoom, true);
+    // กดสุ่มเปิดห้องจากฝั่งซ้าย -> ย้ายตัวเข้าหน้าแชทแบบ Standby ทันที
+    function createNewRoom() {
+      let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let code = '';
+      for (let i = 0; i < 6; i++) { code += chars.charAt(Math.floor(Math.random() * chars.length)); }
+      currentRoom = code;
+      
+      updateSidebarActiveRoom(code);
+      goToChatScreen(code);
+      listenToRoom(code, true);
     }
 
     function copyInviteLink() {
-      if(!myRole) { alert("⚠️ กรุณาเลือกบทบาทด้านบน (ผู้ซื้อ หรือ ผู้ขาย) ก่อนกดคัดลอกลิงก์ครับ"); return; }
+      if(!myRole) { alert("⚠️ ข้อผิดพลาด: ไม่พบสถานะบทบาทของคุณ"); return; }
       const oppositeRole = myRole === 'seller' ? 'buyer' : 'seller';
       const inviteUrl = `${window.location.origin}${window.location.pathname}?room=${currentRoom}&role=${oppositeRole}`;
       
       navigator.clipboard.writeText(inviteUrl).then(() => {
-        alert(`🔗 คัดลอกลิงก์ดีลห้อง ${currentRoom} สำเร็จ! ส่งต่อให้คู่ค้าเปิดลิงก์เข้ามาได้เลย ระบบจะเริ่มทำงานแชทและภารกิจทันทีครับ`);
-        goToChatScreen(currentRoom);
+        alert(`🔗 คัดลอกลิงก์ดีลห้อง ${currentRoom} สำเร็จ! ส่งต่อให้อีกฝ่ายกดเปิดลิงก์ได้เลย ระบบจะปลดล็อกแชทและภารกิจทันทีเมื่อมีผู้กดเปิดลิงก์เชื่อมต่อเข้ามาครับ`);
       });
     }
 
@@ -506,8 +499,11 @@
         });
     }
 
+    // ฟังก์ชันปลดล็อกห้องแชท + แถบภารกิจเมื่ออีกฝั่งเชื่อมต่อสำเร็จ (Real-time ลิงก์ชวน)
     function triggerFullRoomOpen() {
       isRoomFullyOpened = true;
+      
+      // 1. ปลดล็อกช่องแชทและปุ่มส่งข้อความ
       document.getElementById('chat-input').disabled = false;
       document.getElementById('chat-input').placeholder = "พิมพ์ข้อความเจรจา หรือระบุข้อตกลงราคาที่นี่ได้เลย...";
       document.getElementById('chat-input').className = "flex-1 bg-[#09090b] border border-[#27272a] rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#0071e3]";
@@ -515,8 +511,10 @@
       document.getElementById('chat-send-btn').disabled = false;
       document.getElementById('chat-send-btn').className = "bg-[#0071e3] text-white px-6 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-[#147ce5] transition-colors";
       
+      // 2. ปลดล็อกแถบภารกิจฝั่งซ้าย (Timeline)
       document.getElementById('mission-timeline').classList.remove('opacity-40', 'pointer-events-none');
       
+      // 3. ปรับเปลี่ยนป้ายสถานะแจ้งเตือนในห้องแชท
       const waitNotice = document.getElementById('lobby-wait-notice');
       if(waitNotice) {
         waitNotice.className = "bg-[#30d5c8]/10 text-[#30d5c8] text-[11px] px-4 py-2 rounded-md border border-[#30d5c8]/30 animate-none";
