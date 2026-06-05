@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KONKLANG — Secure 1v1 Game ID Middleman</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+        .apple-blur { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    </style>
+</head>
+<body class="bg-[#161617] text-[#f5f5f7] antialiased">
+
+  <header class="w-full fixed top-0 left-0 bg-[#161617]/70 apple-blur border-b border-[#424245]/30 z-50">
+    <div class="max-w-5xl mx-auto h-12 flex items-center justify-between px-6">
+      <div class="text-sm font-semibold tracking-wider text-[#f5f5f7]">KONKLANG</div>
+      <div class="text-xs text-[#86868b]">ระบบกลางซื้อขาย 1V1 ของจริง</div>
+    </div>
+  </header>
+
+  <div id="lobby-page" class="min-h-screen flex flex-col items-center justify-center pt-16 px-4">
+    <div class="text-center mb-12 max-w-xl">
+      <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight mb-4">KONKLANG</h1>
+      <p class="text-lg md:text-xl text-[#86868b] font-light">ระบบกลางซื้อขายไอดีเกมสไตล์ Apple ออนไลน์จริง</p>
+    </div>
+
+    <div id="lobby-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl transition-all duration-700">
+      <div id="create-box" class="bg-[#1d1d1f] p-8 rounded-2xl border border-[#424245]/40 text-center flex flex-col justify-between min-h-[260px] shadow-xl">
+        <div>
+          <h2 id="create-title" class="text-xl font-medium text-white mb-2">เริ่มต้นดีลใหม่</h2>
+          <p id="create-desc" class="text-xs text-[#86868b] mb-4">ระบบจะสร้างรหัสห้องนิรนามเพื่อใช้เชิญคู่กรณีของคุณ</p>
+        </div>
+        
+        <div id="code-display" class="hidden my-2 p-5 bg-[#161617] rounded-xl border border-[#424245]/60">
+          <p class="text-xs text-[#86868b] mb-2">รหัสห้องของคุณ (ส่งให้อีกเครื่องมากรอก)</p>
+          <p id="generated-code" class="text-4xl font-mono font-bold text-[#0071e3] tracking-widest my-1">XXXXXX</p>
+          <p class="text-[11px] text-[#f5f5f7]/50 mt-3 flex items-center justify-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#0071e3] animate-ping"></span> กำลังรออีกฝ่ายออนไลน์เข้าห้อง...
+          </p>
+        </div>
+        <button id="btn-create" onclick="createRoom()" class="bg-[#0071e3] hover:bg-[#147ce5] text-white font-medium py-3 px-6 rounded-xl w-full text-sm">สร้างห้องซื้อขาย</button>
+      </div>
+
+      <div id="join-box" class="bg-[#1d1d1f] p-8 rounded-2xl border border-[#424245]/40 text-center flex flex-col justify-between min-h-[260px] shadow-xl">
+        <div>
+          <h2 class="text-xl font-medium text-white mb-2">เข้าร่วมห้องที่มีอยู่</h2>
+          <p class="text-xs text-[#86868b] mb-4">กรอกรหัสผ่าน 6 หลักที่ได้รับจากเพื่อนเพื่อเข้าสู่ระบบแชทจริง</p>
+        </div>
+        <div>
+          <input id="room-input" type="text" maxlength="6" placeholder="รหัสห้อง 6 หลัก" class="bg-[#161617] border border-[#424245] rounded-xl p-3 w-full text-center font-mono text-xl uppercase tracking-widest focus:outline-none focus:border-[#0071e3]">
+          <button onclick="joinRoom()" class="bg-[#333336] hover:bg-[#424245] text-[#f5f5f7] font-medium py-3 px-6 rounded-xl w-full text-sm mt-4">เข้าร่วมห้อง</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="chat-page" class="hidden min-h-screen pt-16 p-4 md:p-6 max-w-5xl mx-auto flex flex-col md:flex-row gap-6 h-screen overflow-hidden">
+    <div class="w-full md:w-80 bg-[#1d1d1f] rounded-2xl p-5 border border-[#424245]/40 flex flex-col justify-between shadow-xl">
+      <div>
+        <h3 class="text-sm font-semibold text-white">ROOM: <span id="chat-room-id" class="font-mono text-[#0071e3]"></span></h3>
+        <p class="text-xs text-[#30d5c8] bg-[#30d5c8]/10 p-3 rounded-xl mt-4">✓ เชื่อมต่อข้ามอินเทอร์เน็ตสำเร็จแล้ว</p>
+      </div>
+      <button onclick="window.location.reload()" class="w-full bg-[#333336] py-2.5 rounded-xl text-xs">ออกจากห้อง</button>
+    </div>
+
+    <div class="flex-1 bg-[#1d1d1f] rounded-2xl border border-[#424245]/40 flex flex-col h-full overflow-hidden shadow-xl">
+      <div id="chat-messages" class="flex-1 p-5 overflow-y-auto space-y-4 min-h-[300px]"></div>
+      <div class="p-4 bg-[#1d1d1f] border-t border-[#424245]/40 flex gap-3">
+        <input id="chat-input" type="text" placeholder="พิมพ์ข้อความส่งหาอีกเครื่อง..." onkeypress="if(event.key === 'Enter') sendMessage()" class="flex-1 bg-[#161617] border border-[#424245]/60 rounded-xl px-4 py-2.5 text-sm">
+        <button onclick="sendMessage()" class="bg-[#0071e3] text-white px-5 rounded-xl text-xs font-medium">ส่ง</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ⚠️ สำคัญมาก: เอาข้อมูลจากข้อ 1 มาวางใส่ตรงนี้แทนคำภาษาไทยครับ
+    const SUPABASE_URL = "https://gcsbhuxfsulfqlhqnjvp.supabase.co/rest/v1/"; 
+    const SUPABASE_KEY = "sb_publishable_6WZ0cWyMfARA4DSSDAlxgA_IzYR6wIu";
+    
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let currentRoom = "";
+    let channel = null;
+
+    function createRoom() {
+      let code = Math.random().toString(36).substring(2, 8).toUpperCase();
+      currentRoom = code;
+      
+      document.getElementById('join-box').classList.add('hidden');
+      document.getElementById('lobby-grid').className = "w-full max-w-md";
+      document.getElementById('btn-create').classList.add('hidden');
+      document.getElementById('create-title').innerText = "ห้องของคุณพร้อมแล้ว";
+      document.getElementById('create-desc').classList.add('hidden');
+      document.getElementById('generated-code').innerText = code;
+      document.getElementById('code-display').classList.remove('hidden');
+
+      listenToRoom(code);
+    }
+
+    function joinRoom() {
+      let code = document.getElementById('room-input').value.trim().toUpperCase();
+      if(code.length === 6) {
+        currentRoom = code;
+        listenToRoom(code);
+        // ส่งสัญญาณบอกคนสร้างห้องว่าเราเข้ามาแล้ว
+        setTimeout(() => {
+          channel.send({ type: 'broadcast', event: 'join', payload: {} });
+          openChatView(code);
+        }, 1000);
+      }
+    }
+
+    function listenToRoom(roomCode) {
+      channel = supabaseClient.channel(`room_${roomCode}`);
+      
+      channel
+        .on('broadcast', { event: 'join' }, () => {
+          openChatView(roomCode);
+        })
+        .on('broadcast', { event: 'msg' }, (response) => {
+          document.getElementById('chat-messages').innerHTML += `<div class="flex justify-start"><div class="bg-[#333336] text-[#f5f5f7] max-w-xs rounded-2xl rounded-tl-none px-4 py-2 text-sm font-light">${response.payload.text}</div></div>`;
+          let box = document.getElementById('chat-messages'); box.scrollTop = box.scrollHeight;
+        })
+        .subscribe();
+    }
+
+    function openChatView(code) {
+      document.getElementById('lobby-page').classList.add('hidden');
+      document.getElementById('chat-page').classList.remove('hidden');
+      document.getElementById('chat-room-id').innerText = code;
+    }
+
+    function sendMessage() {
+      let input = document.getElementById('chat-input');
+      let text = input.value.trim();
+      if (!text) return;
+      
+      document.getElementById('chat-messages').innerHTML += `<div class="flex justify-end"><div class="bg-[#0071e3] text-white max-w-xs rounded-2xl rounded-tr-none px-4 py-2 text-sm font-light">${text}</div></div>`;
+      
+      // ส่งสัญญาณแชทข้ามอินเทอร์เน็ตจริงผ่านท่อ Supabase
+      channel.send({ type: 'broadcast', event: 'msg', payload: { text: text } });
+      
+      input.value = "";
+      let box = document.getElementById('chat-messages'); box.scrollTop = box.scrollHeight;
+    }
+  </script>
+</body>
+</html>
