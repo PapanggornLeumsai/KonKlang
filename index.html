@@ -7,129 +7,186 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
-        .apple-blur { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
-        .mission-step { transition: all 0.3s ease; }
+        body { font-family: 'Kanit', sans-serif; }
+        .cyber-panel { background-color: #121214; border: 1px solid #27272a; }
+        .cyber-glow { box-shadow: 0 0 15px rgba(0, 113, 227, 0.2); }
     </style>
 </head>
-<body class="bg-[#161617] text-[#f5f5f7] antialiased">
+<body class="bg-[#09090b] text-[#f4f4f5] antialiased">
 
-  <header class="w-full fixed top-0 left-0 bg-[#161617]/70 apple-blur border-b border-[#424245]/30 z-50">
-    <div class="max-w-6xl mx-auto h-12 flex items-center justify-between px-6">
-      <div class="text-sm font-semibold tracking-wider text-[#f5f5f7]">KONKLANG</div>
+  <header class="w-full fixed top-0 left-0 bg-[#09090b]/90 border-b border-[#27272a] z-50 backdrop-blur-md">
+    <div class="max-w-6xl mx-auto h-14 flex items-center justify-between px-6">
+      <div class="text-base font-bold tracking-wider text-[#0071e3] drop-shadow-[0_0_10px_rgba(0,113,227,0.5)] cursor-pointer" onclick="goHome()">KONKLANG</div>
       <div class="flex items-center gap-3">
-        <div class="text-xs text-[#86868b]">ระบบซื้อขายออนไลน์</div>
-        <div id="role-tag" class="text-xs bg-[#424245] px-2.5 py-0.5 rounded-full text-white font-medium hidden"></div>
+        <div class="text-xs text-[#a1a1aa] font-medium bg-[#18181b] px-3 py-1 rounded-md border border-[#27272a]">ระบบซื้อขายออนไลน์</div>
+        <div id="username-tag" class="text-xs bg-[#27272a] px-2.5 py-1 rounded-md text-white font-medium hidden"></div>
+        <div id="role-tag" class="text-xs bg-[#0071e3]/20 border border-[#0071e3]/40 px-2.5 py-1 rounded-md text-[#0071e3] font-medium hidden"></div>
       </div>
     </div>
   </header>
 
-  <div id="lobby-page" class="min-h-screen flex flex-col items-center justify-center pt-16 px-4">
-    <div class="text-center mb-8 max-w-xl">
-      <h1 class="text-4xl font-bold text-white tracking-tight mb-2">KONKLANG</h1>
-      <p class="text-base text-[#86868b] font-light">ระบบซื้อขายออนไลน์</p>
+  <div id="login-page" class="min-h-screen flex flex-col items-center justify-center px-4">
+    <div class="w-full max-w-sm cyber-panel p-8 rounded-xl shadow-2xl text-center">
+      <h1 class="text-3xl font-black text-white mb-2 tracking-wide">KONKLANG</h1>
+      <p class="text-xs text-[#a1a1aa] mb-6">เข้าสู่ระบบเพื่อใช้งานระบบซื้อขายออนไลน์</p>
+      
+      <div class="text-left mb-4">
+        <label class="text-xs font-bold text-[#a1a1aa] uppercase tracking-wider block mb-2">ชื่อผู้ใช้งาน / เบอร์โทรศัพท์</label>
+        <input id="login-username" type="text" placeholder="ระบุชื่อผู้ใช้งานของคุณ" class="w-full bg-[#09090b] border border-[#27272a] rounded-lg p-3 text-sm text-white focus:outline-none focus:border-[#0071e3]">
+      </div>
+      <button onclick="handleLogin()" class="bg-[#0071e3] hover:bg-[#147ce5] text-white font-bold py-3 px-6 rounded-lg w-full text-xs uppercase tracking-wider transition-colors shadow-lg shadow-[#0071e3]/20">เข้าสู่ระบบ</button>
+    </div>
+  </div>
+
+  <div id="dashboard-page" class="hidden min-h-screen pt-24 px-4 max-w-4xl mx-auto">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#27272a] pb-5 mb-6">
+      <div>
+        <h2 class="text-xl font-bold text-white">ประวัติการซื้อขายของคุณ</h2>
+        <p class="text-xs text-[#a1a1aa] mt-0.5">รวมรายการดีลกลางและสถานะการซื้อขายในระบบที่ผ่านมา</p>
+      </div>
+      <button onclick="startNewDeal()" class="bg-[#0071e3] hover:bg-[#147ce5] text-white font-bold py-2.5 px-5 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-md flex items-center gap-1.5 self-start">
+        <span>➕</span> เริ่มซื้อขายใหม่
+      </button>
     </div>
 
-    <div id="role-selection" class="w-full max-w-md bg-[#1d1d1f] p-6 rounded-2xl border border-[#424245]/40 mb-6 text-center shadow-xl">
-      <p class="text-sm text-[#86868b] mb-4">กรุณาเลือกบทบาทของคุณในดีลนี้ก่อนทำรายการ</p>
+    <div class="space-y-3" id="history-list">
+      <div class="cyber-panel p-4 rounded-xl flex items-center justify-between bg-[#18181b]/40">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-[#30d5c8]/10 text-[#30d5c8] rounded-lg border border-[#30d5c8]/20 flex items-center justify-center text-sm">✅</div>
+          <div>
+            <h4 class="text-sm font-bold text-white">ดีลไอดีเกม ROV — ROOM: <span class="font-mono text-[#0071e3]">X7B2K9</span></h4>
+            <p class="text-[11px] text-[#a1a1aa]">ยอดเงินกึ่งกลาง: 1,500 THB • บทบาท: ผู้ขาย • สำเร็จเมื่อวานนี้</p>
+          </div>
+        </div>
+        <span class="text-xs font-bold text-[#30d5c8] bg-[#30d5c8]/10 px-2.5 py-1 rounded-md">สำเร็จแล้ว</span>
+      </div>
+
+      <div class="cyber-panel p-4 rounded-xl flex items-center justify-between bg-[#18181b]/40">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-[#30d5c8]/10 text-[#30d5c8] rounded-lg border border-[#30d5c8]/20 flex items-center justify-center text-sm">✅</div>
+          <div>
+            <h4 class="text-sm font-bold text-white">ดีลไอดีเกม Free Fire — ROOM: <span class="font-mono text-[#0071e3]">M4P1W0</span></h4>
+            <p class="text-[11px] text-[#a1a1aa]">ยอดเงินกึ่งกลาง: 450 THB • บทบาท: ผู้ซื้อ • สำเร็จเมื่อ 3 วันก่อน</p>
+          </div>
+        </div>
+        <span class="text-xs font-bold text-[#30d5c8] bg-[#30d5c8]/10 px-2.5 py-1 rounded-md">สำเร็จแล้ว</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="lobby-page" class="hidden min-h-screen flex flex-col items-center justify-center pt-16 px-4">
+    <div class="text-center mb-6 max-w-xl">
+      <h1 class="text-3xl font-black text-white tracking-tight mb-2">KONKLANG</h1>
+      <p class="text-sm text-[#0071e3] font-semibold uppercase">สร้างหรือเข้าร่วมห้องกลาง</p>
+    </div>
+
+    <div id="role-selection" class="w-full max-w-md cyber-panel p-5 rounded-xl mb-6 text-center shadow-2xl">
+      <p class="text-xs text-[#a1a1aa] mb-4 font-medium">กรุณาเลือกบทบาทของคุณในดีลนี้เพื่อตั้งค่าห้อง</p>
       <div class="grid grid-cols-2 gap-4">
-        <button id="btn-role-buyer" onclick="selectRole('buyer')" class="border border-[#424245] hover:border-[#0071e3] p-4 rounded-xl flex flex-col items-center gap-2 transition">
+        <button id="btn-role-buyer" onclick="selectRole('buyer')" class="border border-[#27272a] hover:border-[#0071e3] bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all duration-200">
           <span class="text-2xl">🛒</span>
-          <span class="text-sm font-medium">ฉันคือผู้ซื้อ</span>
+          <span class="text-xs font-bold text-white">ฉันคือผู้ซื้อ</span>
         </button>
-        <button id="btn-role-seller" onclick="selectRole('seller')" class="border border-[#424245] hover:border-[#0071e3] p-4 rounded-xl flex flex-col items-center gap-2 transition">
+        <button id="btn-role-seller" onclick="selectRole('seller')" class="border border-[#27272a] hover:border-[#0071e3] bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all duration-200">
           <span class="text-2xl">💰</span>
-          <span class="text-sm font-medium">ฉันคือผู้ขาย</span>
+          <span class="text-xs font-bold text-white">ฉันคือผู้ขาย</span>
         </button>
       </div>
     </div>
 
-    <div id="lobby-grid" class="opacity-30 pointer-events-none grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl transition-all duration-500">
+    <div id="lobby-grid" class="opacity-20 pointer-events-none grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl transition-all duration-300">
       
-      <div id="create-box" class="bg-[#1d1d1f] p-6 rounded-2xl border border-[#424245]/40 text-center flex flex-col justify-between min-h-[240px] shadow-xl">
+      <div id="create-box" class="cyber-panel p-5 rounded-xl text-center flex flex-col justify-between min-h-[250px] shadow-2xl">
         <div>
-          <h2 class="text-lg font-medium text-white mb-1">เริ่มต้นดีลใหม่</h2>
-          <p class="text-xs text-[#86868b] mb-4">ระบุราคาขายเพื่อสร้างระบบห้องกลาง</p>
-          <input id="price-input" type="number" placeholder="ระบุจำนวนเงิน (บาท)" class="hidden bg-[#161617] border border-[#424245] rounded-xl p-2.5 w-full text-center text-sm mb-4 focus:outline-none focus:border-[#0071e3]">
+          <h2 class="text-sm font-bold text-white mb-1">เริ่มต้นดีลใหม่</h2>
+          <p class="text-[11px] text-[#a1a1aa] mb-4">ระบุราคาขายเพื่อเปิดระบบห้องกลางและรับลิงก์เชิญ</p>
+          <input id="price-input" type="number" placeholder="ระบุจำนวนเงิน (บาท)" class="hidden bg-[#09090b] border border-[#27272a] rounded-lg p-2.5 w-full text-center text-sm mb-4 font-bold text-white focus:outline-none focus:border-[#0071e3]">
         </div>
         
-        <div id="code-display" class="hidden my-2 p-3 bg-[#161617] rounded-xl border border-[#424245]/60">
-          <p class="text-[11px] text-[#86868b] mb-1">รหัสห้องของคุณ (ส่งให้ผู้ซื้อนำไปกรอก)</p>
-          <p id="generated-code" class="text-3xl font-mono font-bold text-[#0071e3] tracking-widest">XXXXXX</p>
+        <div id="code-display" class="hidden my-2 p-3 bg-[#09090b] rounded-lg border border-[#27272a] cyber-glow flex flex-col gap-2">
+          <div>
+            <p class="text-[10px] text-[#a1a1aa] mb-0.5 font-medium">รหัสห้อง (สำหรับส่งให้อีกฝ่ายกรอก)</p>
+            <p id="generated-code" class="text-3xl font-mono font-black text-[#0071e3] tracking-widest">XXXXXX</p>
+          </div>
+          <div class="border-t border-[#27272a] pt-2 mt-1">
+            <button onclick="copyInviteLink()" class="w-full bg-[#18181b] border border-[#27272a] hover:border-[#0071e3] text-white py-1.5 rounded-md text-[11px] font-bold flex items-center justify-center gap-1 transition-all">
+              🔗 คัดลอกลิงก์เชิญอัตโนมัติ
+            </button>
+          </div>
         </div>
-        <button id="btn-create" onclick="createRoom()" class="bg-[#0071e3] hover:bg-[#147ce5] text-white font-medium py-2.5 px-6 rounded-xl w-full text-xs">สร้างห้องและตั้งราคา</button>
+        <button id="btn-create" onclick="createRoom()" class="bg-[#0071e3] hover:bg-[#147ce5] text-white font-bold py-2.5 px-6 rounded-lg w-full text-xs uppercase tracking-wider transition-colors shadow-lg">สร้างห้องและตั้งราคา</button>
       </div>
 
-      <div id="join-box" class="bg-[#1d1d1f] p-6 rounded-2xl border border-[#424245]/40 text-center flex flex-col justify-between min-h-[240px] shadow-xl">
+      <div id="join-box" class="cyber-panel p-5 rounded-xl text-center flex flex-col justify-between min-h-[250px] shadow-2xl">
         <div>
-          <h2 class="text-lg font-medium text-white mb-1">เข้าร่วมห้องที่มีอยู่</h2>
-          <p class="text-xs text-[#86868b] mb-4">กรอกรหัสผ่าน 6 หลักที่ได้จากผู้ขายเพื่อเข้าห้องดีล</p>
+          <h2 class="text-sm font-bold text-white mb-1">เข้าร่วมห้องที่มีอยู่</h2>
+          <p class="text-[11px] text-[#a1a1aa] mb-4">กรอกรหัสผ่าน 6 หลักที่ได้จากผู้สร้างดีลเพื่อเข้าทำรายการ</p>
         </div>
         <div>
-          <input id="room-input" type="text" maxlength="6" placeholder="รหัสห้อง 6 หลัก" class="bg-[#161617] border border-[#424245] rounded-xl p-2.5 w-full text-center font-mono text-lg uppercase tracking-widest focus:outline-none focus:border-[#0071e3]">
-          <button id="btn-join" onclick="joinRoom()" class="bg-[#333336] hover:bg-[#424245] text-[#f5f5f7] font-medium py-2.5 px-6 rounded-xl w-full text-xs mt-4">เข้าร่วมดีล</button>
+          <input id="room-input" type="text" maxlength="6" placeholder="รหัสห้อง 6 หลัก" class="bg-[#09090b] border border-[#27272a] rounded-lg p-2.5 w-full text-center font-mono text-lg uppercase tracking-widest text-white font-bold focus:outline-none focus:border-[#0071e3]">
+          <button id="btn-join" onclick="joinRoom()" class="bg-[#27272a] hover:bg-[#3f3f46] text-white font-bold py-2.5 px-6 rounded-lg w-full text-xs uppercase tracking-wider mt-4 transition-colors">เข้าร่วมดีล</button>
         </div>
       </div>
     </div>
   </div>
 
-  <div id="chat-page" class="hidden min-h-screen pt-14 p-4 max-w-7xl mx-auto flex flex-col lg:flex-row gap-6 h-[calc(100vh-4rem)] overflow-hidden">
+  <div id="chat-page" class="hidden min-h-screen pt-16 p-4 max-w-7xl mx-auto flex flex-col lg:flex-row gap-6 h-[calc(100vh-4rem)] overflow-hidden">
     
-    <div class="w-full lg:w-[450px] bg-[#1d1d1f] rounded-2xl p-5 border border-[#424245]/40 flex flex-col justify-between shadow-xl overflow-y-auto">
+    <div class="w-full lg:w-[450px] cyber-panel rounded-xl p-5 flex flex-col justify-between shadow-2xl overflow-y-auto">
       <div>
-        <div class="flex justify-between items-center border-b border-[#424245]/40 pb-3 mb-4">
-          <h3 class="text-sm font-semibold text-white">ขั้นตอนกลาง (ROOM: <span id="chat-room-id" class="font-mono text-[#0071e3]"></span>)</h3>
-          <span id="price-tag" class="text-sm font-bold text-[#30d5c8]">0 THB</span>
+        <div class="flex justify-between items-center border-b border-[#27272a] pb-3 mb-4">
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider">ขั้นตอนกลาง (ROOM: <span id="chat-room-id" class="font-mono text-[#0071e3]"></span>)</h3>
+          <span id="price-tag" class="text-base font-black text-[#30d5c8] bg-[#30d5c8]/10 px-3 py-1 rounded-md border border-[#30d5c8]/20">0 THB</span>
         </div>
 
         <div class="space-y-4">
-          <div id="step-1" class="mission-step p-3.5 bg-[#161617] border border-[#0071e3] rounded-xl flex items-start gap-3">
-            <div id="check-1" class="w-5 h-5 rounded-full border border-[#424245] flex items-center justify-center text-xs text-white bg-[#0071e3]">1</div>
+          <div id="step-1" class="mission-step p-4 bg-[#09090b] border border-[#0071e3] rounded-xl flex items-start gap-3 cyber-glow">
+            <div id="check-1" class="w-6 h-6 rounded-md font-bold flex items-center justify-center text-xs text-white bg-[#0071e3]">1</div>
             <div>
-              <h4 class="text-xs font-semibold text-white">ขั้นตอนที่ 1: ตั้งราคาและจับคู่ดีล</h4>
-              <p class="text-[11px] text-[#86868b] mt-0.5">ผู้ขายตั้งราคาและดึงผู้ซื้อเข้าห้องสำเร็จ</p>
+              <h4 class="text-xs font-bold text-white">ขั้นตอนที่ 1: ตั้งราคาและจับคู่ดีล</h4>
+              <p class="text-[11px] text-[#a1a1aa] mt-0.5">ผู้สร้างดีลตั้งค่าห้องและดึงอีกฝ่ายเข้าสู่ระบบสำเร็จแล้ว</p>
             </div>
           </div>
 
-          <div id="step-2" class="mission-step p-3.5 bg-[#161617] border border-[#424245]/40 rounded-xl flex flex-col gap-3">
+          <div id="step-2" class="mission-step p-4 bg-[#09090b] border border-[#27272a] rounded-xl flex flex-col gap-3">
             <div class="flex items-start gap-3">
-              <div id="check-2" class="w-5 h-5 rounded-full border border-[#424245] flex items-center justify-center text-xs text-[#86868b]">2</div>
+              <div id="check-2" class="w-6 h-6 rounded-md font-bold border border-[#27272a] flex items-center justify-center text-xs text-[#a1a1aa] bg-[#18181b]">2</div>
               <div class="flex-1">
-                <h4 class="text-xs font-semibold text-white">ขั้นตอนที่ 2: ผู้ซื้อโอนเงินเข้าบัญชีส่วนกลาง</h4>
-                <p class="text-[11px] text-[#86868b] mt-0.5">เงินค่าสินค้าจะถูกเก็บพักไว้ที่ระบบกลางของร้านเพื่อความปลอดภัย</p>
+                <h4 class="text-xs font-bold text-white">ขั้นตอนที่ 2: ผู้ซื้อโอนเงินเข้าบัญชีส่วนกลาง</h4>
+                <p class="text-[11px] text-[#a1a1aa] mt-0.5">เงินค่าสินค้าจะถูกเก็บพักไว้ที่ระบบกลางเพื่อความปลอดภัย</p>
                 
-                <div id="buyer-upload-zone" class="hidden mt-3 p-3 bg-[#1d1d1f] border border-dashed border-[#424245] rounded-xl text-center">
-                  <p class="text-[11px] text-[#30d5c8] mb-2 font-medium">💰 บัญชีกลางร้าน: 000-0-00000-0 (ธ.กสิกรไทย)</p>
+                <div id="buyer-upload-zone" class="hidden mt-3 p-3 bg-[#121214] border border-dashed border-[#27272a] rounded-lg text-center">
+                  <p class="text-[11px] text-[#30d5c8] mb-2 font-bold uppercase tracking-wider">💰 บัญชีกลางร้าน: 000-0-00000-0 (ธ.กสิกรไทย)</p>
                   <input type="file" id="slip-file" accept="image/*" class="hidden" onchange="simulatePayment()">
-                  <button onclick="document.getElementById('slip-file').click()" class="bg-[#0071e3] hover:bg-[#147ce5] text-white px-4 py-1.5 rounded-lg text-[11px] font-medium">📤 อัปโหลดสลิปหลักฐานโอนเงิน</button>
+                  <button onclick="document.getElementById('slip-file').click()" class="bg-[#0071e3] hover:bg-[#147ce5] text-white px-4 py-2 rounded-md text-[11px] font-bold uppercase transition-colors">📤 อัปโหลดสลิปหลักฐานโอนเงิน</button>
                 </div>
-                <p id="step-2-status" class="text-[11px] text-[#86868b] mt-2 hidden">⏳ กำลังรอผู้ซื้อทำรายการโอนเงินเข้ากองกลาง...</p>
+                <p id="step-2-status" class="text-[11px] text-[#a1a1aa] mt-2 font-medium hidden">⏳ กำลังรอผู้ซื้อทำรายการโอนเงินเข้ากองกลาง...</p>
               </div>
             </div>
           </div>
 
-          <div id="step-3" class="mission-step p-3.5 bg-[#161617] border border-[#424245]/40 rounded-xl flex items-start gap-3">
-            <div id="check-3" class="w-5 h-5 rounded-full border border-[#424245] flex items-center justify-center text-xs text-[#86868b]">3</div>
+          <div id="step-3" class="mission-step p-4 bg-[#09090b] border border-[#27272a] rounded-xl flex items-start gap-3">
+            <div id="check-3" class="w-6 h-6 rounded-md font-bold border border-[#27272a] flex items-center justify-center text-xs text-[#a1a1aa] bg-[#18181b]">3</div>
             <div>
-              <h4 class="text-xs font-semibold text-white">ขั้นตอนที่ 3: ผู้ขายส่งมอบรหัส</h4>
-              <p class="text-[11px] text-[#86868b] mt-0.5">ระบบได้รับเงินแล้ว ให้ผู้ขายทำการพิมพ์ข้อมูลไอดีและรหัสผ่านส่งในช่องแชท</p>
-              <p id="step-3-status" class="text-[11px] text-[#ff9f0a] mt-2 hidden">📥 เงินเข้าระบบกลางแล้ว! ผู้ขายส่งรหัสให้ผู้ซื้อได้เลย</p>
+              <h4 class="text-xs font-bold text-white">ขั้นตอนที่ 3: ผู้ขายส่งมอบรหัส</h4>
+              <p class="text-[11px] text-[#a1a1aa] mt-0.5">ระบบได้รับเงินแล้ว ให้ผู้ขายทำการพิมพ์ข้อมูลไอดีและรหัสผ่านส่งในช่องแชท</p>
+              <p id="step-3-status" class="text-[11px] text-[#ff9f0a] font-bold mt-2 hidden">📥 เงินเข้าระบบกลางแล้ว! ผู้ขายส่งรหัสให้ผู้ซื้อได้เลย</p>
             </div>
           </div>
 
-          <div id="step-4" class="mission-step p-3.5 bg-[#161617] border border-[#424245]/40 rounded-xl flex flex-col gap-3">
+          <div id="step-4" class="mission-step p-4 bg-[#09090b] border border-[#27272a] rounded-xl flex flex-col gap-3">
             <div class="flex items-start gap-3">
-              <div id="check-4" class="w-5 h-5 rounded-full border border-[#424245] flex items-center justify-center text-xs text-[#86868b]">4</div>
+              <div id="check-4" class="w-6 h-6 rounded-md font-bold border border-[#27272a] flex items-center justify-center text-xs text-[#a1a1aa] bg-[#18181b]">4</div>
               <div class="flex-1">
-                <h4 class="text-xs font-semibold text-white">ขั้นตอนที่ 4: ผู้ซื้อตรวจสอบและยืนยันรับของ</h4>
-                <p class="text-[11px] text-[#86868b] mt-0.5">เมื่อเช็คและเปลี่ยนรหัสเรียบร้อย ให้ผู้ซื้อกดยืนยันเพื่อปล่อยเงินให้ผู้ขาย</p>
+                <h4 class="text-xs font-bold text-white">ขั้นตอนที่ 4: ผู้ซื้อตรวจสอบและยืนยันรับของ</h4>
+                <p class="text-[11px] text-[#a1a1aa] mt-0.5">เมื่อเช็คและเปลี่ยนรหัสเรียบร้อย ให้ผู้ซื้อกดยืนยันเพื่อปล่อยเงินให้ผู้ขาย</p>
                 
                 <div id="buyer-confirm-zone" class="hidden mt-3 flex flex-col gap-2">
-                  <button id="btn-confirm-1" onclick="confirmReceipt(1)" class="bg-[#ff9f0a] text-white px-4 py-1.5 rounded-lg text-[11px] font-medium">⚠️ ตรวจสอบรหัสเรียบร้อยแล้ว (ยืนยันรอบที่ 1)</button>
-                  <button id="btn-confirm-2" onclick="confirmReceipt(2)" class="hidden bg-[#30d5c8] text-black px-4 py-1.5 rounded-lg text-[11px] font-bold">✅ ตรวจสอบครบถ้วน เปลี่ยนรหัสผ่านแล้ว (ยืนยันรอบที่ 2)</button>
+                  <button id="btn-confirm-1" onclick="confirmReceipt(1)" class="bg-[#ff9f0a] text-white px-4 py-2 rounded-md text-[11px] font-bold transition-colors">⚠️ ตรวจสอบรหัสเรียบร้อยแล้ว (ยืนยันรอบที่ 1)</button>
+                  <button id="btn-confirm-2" onclick="confirmReceipt(2)" class="hidden bg-[#30d5c8] text-black px-4 py-2 rounded-md text-[11px] font-black transition-colors">✅ ตรวจสอบครบถ้วน เปลี่ยนรหัสผ่านแล้ว (ยืนยันรอบที่ 2)</button>
                 </div>
               </div>
             </div>
@@ -137,18 +194,18 @@
         </div>
       </div>
       
-      <div class="mt-4 pt-4 border-t border-[#424245]/40 text-center">
-        <p class="text-[11px] text-[#86868b]">ความปลอดภัยขับเคลื่อนโดยระบบบล็อกกลางอัตโนมัติ KONKLANG</p>
+      <div class="mt-4 pt-4 border-t border-[#27272a] text-center">
+        <p class="text-[11px] text-[#a1a1aa] font-medium">ความปลอดภัยขับเคลื่อนโดยระบบบล็อกกลางอัตโนมัติ KONKLANG</p>
       </div>
     </div>
 
-    <div class="flex-1 bg-[#1d1d1f] rounded-2xl border border-[#424245]/40 flex flex-col h-full overflow-hidden shadow-xl">
+    <div class="flex-1 cyber-panel rounded-xl flex flex-col h-full overflow-hidden shadow-2xl">
       <div id="chat-messages" class="flex-1 p-5 overflow-y-auto space-y-4 min-h-[300px]">
-        <div class="flex justify-center"><div class="bg-[#424245]/40 text-[#86868b] text-[11px] px-3 py-1 rounded-full">ยินดีต้อนรับสู่ระบบกลางประมูลแชทปลอดภัย</div></div>
+        <div class="flex justify-center"><div class="bg-[#27272a]/60 text-[#a1a1aa] text-[11px] px-4 py-1 rounded-md border border-[#27272a]">ยินดีต้อนรับสู่ระบบกลางประมูลแชทปลอดภัย</div></div>
       </div>
-      <div class="p-4 bg-[#1d1d1f] border-t border-[#424245]/40 flex gap-3">
-        <input id="chat-input" type="text" placeholder="พิมพ์ข้อความคุยกันที่นี่..." onkeypress="if(event.key === 'Enter') sendMessage()" class="flex-1 bg-[#161617] border border-[#424245]/60 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#0071e3]">
-        <button onclick="sendMessage()" class="bg-[#0071e3] text-white px-5 rounded-xl text-xs font-medium hover:bg-[#147ce5]">ส่ง</button>
+      <div class="p-4 bg-[#121214] border-t border-[#27272a] flex gap-3">
+        <input id="chat-input" type="text" placeholder="พิมพ์ข้อความคุยกันที่นี่..." onkeypress="if(event.key === 'Enter') sendMessage()" class="flex-1 bg-[#09090b] border border-[#27272a] rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#0071e3]">
+        <button onclick="sendMessage()" class="bg-[#0071e3] text-white px-6 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-[#147ce5] transition-colors shadow-lg shadow-[#0071e3]/10">ส่ง</button>
       </div>
     </div>
   </div>
@@ -162,25 +219,79 @@
     let channel = null;
     let myRole = ""; 
     let dealPrice = 0;
+    let myUsername = "";
+
+    // เมื่อเปิดโหลดหน้าเว็บ ให้เช็ค Query Parameter ทันทีว่ามีลิงก์เชิญมาไหม
+    window.onload = function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const inviteRoom = urlParams.get('room');
+      const inviteRole = urlParams.get('role'); // บทบาทที่ผู้สร้างต้องการให้คนกดลิงก์เป็น
+
+      if (inviteRoom && inviteRole) {
+        myUsername = "Guest_" + Math.floor(Math.random() * 9000 + 1000);
+        document.getElementById('username-tag').innerText = "👤 " + myUsername;
+        document.getElementById('username-tag').classList.remove('hidden');
+        document.getElementById('login-page').classList.add('hidden');
+        
+        myRole = inviteRole;
+        document.getElementById('role-tag').innerText = myRole === 'buyer' ? 'ผู้ซื้อ 🛒' : 'ผู้ขาย 💰';
+        document.getElementById('role-tag').classList.remove('hidden');
+
+        currentRoom = inviteRoom;
+        listenToRoom(inviteRoom, false);
+        
+        setTimeout(() => {
+          channel.send({ type: 'broadcast', event: 'join_event', payload: { role: myRole } });
+        }, 1200);
+      }
+    };
+
+    function handleLogin() {
+      const username = document.getElementById('login-username').value.trim();
+      if (!username) {
+        alert("กรุณาระบุชื่อผู้ใช้งานก่อนครับ");
+        return;
+      }
+      myUsername = username;
+      document.getElementById('username-tag').innerText = "👤 " + username;
+      document.getElementById('username-tag').classList.remove('hidden');
+      
+      document.getElementById('login-page').classList.add('hidden');
+      document.getElementById('dashboard-page').classList.remove('hidden');
+    }
+
+    function startNewDeal() {
+      document.getElementById('dashboard-page').classList.add('hidden');
+      document.getElementById('lobby-page').classList.remove('hidden');
+    }
+
+    function goHome() {
+      if (!myUsername) return;
+      document.getElementById('lobby-page').classList.add('hidden');
+      document.getElementById('chat-page').classList.add('hidden');
+      document.getElementById('role-tag').classList.add('hidden');
+      document.getElementById('dashboard-page').classList.remove('hidden');
+      if (channel) { channel.unsubscribe(); }
+    }
 
     function selectRole(role) {
       myRole = role;
-      document.getElementById('role-tag').innerText = role === 'buyer' ? 'บทบาท: ผู้ซื้อ 🛒' : 'บทบาท: ผู้ขาย 💰';
+      document.getElementById('role-tag').innerText = role === 'buyer' ? 'ผู้ซื้อ 🛒' : 'ผู้ขาย 💰';
       document.getElementById('role-tag').classList.remove('hidden');
       
-      document.getElementById('lobby-grid').classList.remove('opacity-30', 'pointer-events-none');
+      document.getElementById('lobby-grid').classList.remove('opacity-20', 'pointer-events-none');
       
-      document.getElementById('btn-role-buyer').className = role === 'buyer' ? 'border-2 border-[#0071e3] bg-[#0071e3]/10 p-4 rounded-xl flex flex-col items-center gap-2 transition' : 'border border-[#424245] opacity-50 p-4 rounded-xl flex flex-col items-center gap-2 transition';
-      document.getElementById('btn-role-seller').className = role === 'seller' ? 'border-2 border-[#0071e3] bg-[#0071e3]/10 p-4 rounded-xl flex flex-col items-center gap-2 transition' : 'border border-[#424245] opacity-50 p-4 rounded-xl flex flex-col items-center gap-2 transition';
+      document.getElementById('btn-role-buyer').className = role === 'buyer' ? 'border-2 border-[#0071e3] bg-[#0071e3]/10 p-4 rounded-lg flex flex-col items-center gap-2 transition-all duration-200' : 'border border-[#27272a] opacity-40 bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all duration-200';
+      document.getElementById('btn-role-seller').className = role === 'seller' ? 'border-2 border-[#0071e3] bg-[#0071e3]/10 p-4 rounded-lg flex flex-col items-center gap-2 transition-all duration-200' : 'border border-[#27272a] opacity-40 bg-[#18181b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all duration-200';
 
       if (role === 'seller') {
         document.getElementById('price-input').classList.remove('hidden');
-        document.getElementById('join-box').classList.add('opacity-30', 'pointer-events-none');
-        document.getElementById('create-box').classList.remove('opacity-30', 'pointer-events-none');
+        document.getElementById('join-box').classList.add('opacity-20', 'pointer-events-none');
+        document.getElementById('create-box').classList.remove('opacity-20', 'pointer-events-none');
       } else {
         document.getElementById('price-input').classList.add('hidden');
-        document.getElementById('create-box').classList.add('opacity-30', 'pointer-events-none');
-        document.getElementById('join-box').classList.remove('opacity-30', 'pointer-events-none');
+        document.getElementById('create-box').classList.add('opacity-20', 'pointer-events-none');
+        document.getElementById('join-box').classList.remove('opacity-20', 'pointer-events-none');
       }
     }
 
@@ -205,6 +316,18 @@
       listenToRoom(code, true);
     }
 
+    function copyInviteLink() {
+      // คำนวณบทบาทของอีกฝ่ายที่จะส่งให้ (ถ้าเราเป็นผู้ขาย อีกฝ่ายต้องกดลิงก์มาเป็นผู้ซื้อ)
+      const oppositeRole = myRole === 'seller' ? 'buyer' : 'seller';
+      const inviteUrl = `${window.location.origin}${window.location.pathname}?room=${currentRoom}&role=${oppositeRole}`;
+      
+      navigator.clipboard.writeText(inviteUrl).then(() => {
+        alert("🔗 คัดลอกลิงก์เชิญส่งดีลให้เพื่อนเรียบร้อยแล้ว! เมื่อเพื่อนกดลิงก์จะเข้าระบบและเลือกบทบาทให้เองทันที");
+      }).catch(err => {
+        alert("ไม่สามารถคัดลอกลิงก์ได้ กรุณาส่งรหัสห้อง 6 หลักให้แทนครับ: " + currentRoom);
+      });
+    }
+
     function joinRoom() {
       let code = document.getElementById('room-input').value.trim().toUpperCase();
       if(code.length === 6) {
@@ -212,7 +335,7 @@
         listenToRoom(code, false);
         
         setTimeout(() => {
-          channel.send({ type: 'broadcast', event: 'join_event', payload: { role: 'buyer' } });
+          channel.send({ type: 'broadcast', event: 'join_event', payload: { role: myRole } });
         }, 800);
       } else {
         alert("กรุณากรอกรหัสห้องให้ครบ 6 หลักครับ");
@@ -262,10 +385,10 @@
     function updateMissionUI(step) {
       if (step === 1) {
         document.getElementById('check-1').innerHTML = "✓";
-        document.getElementById('check-1').className = "w-5 h-5 rounded-full flex items-center justify-center text-xs text-black bg-[#30d5c8]";
-        document.getElementById('step-1').className = "mission-step p-3.5 bg-[#161617] border border-[#424245]/40 rounded-xl flex items-start gap-3 opacity-60";
+        document.getElementById('check-1').className = "w-6 h-6 rounded-md font-bold flex items-center justify-center text-xs text-black bg-[#30d5c8]";
+        document.getElementById('step-1').className = "mission-step p-4 bg-[#09090b] border border-[#27272a] rounded-xl flex items-start gap-3 opacity-50";
         
-        document.getElementById('step-2').className = "mission-step p-3.5 bg-[#161617] border border-[#0071e3] rounded-xl flex flex-col gap-3";
+        document.getElementById('step-2').className = "mission-step p-4 bg-[#09090b] border border-[#0071e3] rounded-xl flex flex-col gap-3 cyber-glow";
         if (myRole === 'buyer') {
           document.getElementById('buyer-upload-zone').classList.remove('hidden');
         } else {
@@ -274,14 +397,14 @@
       } 
       else if (step === 2) {
         document.getElementById('check-2').innerHTML = "✓";
-        document.getElementById('check-2').className = "w-5 h-5 rounded-full flex items-center justify-center text-xs text-black bg-[#30d5c8]";
-        document.getElementById('step-2').className = "mission-step p-3.5 bg-[#161617] border border-[#424245]/40 rounded-xl flex flex-col gap-3 opacity-60";
+        document.getElementById('check-2').className = "w-6 h-6 rounded-md font-bold flex items-center justify-center text-xs text-black bg-[#30d5c8]";
+        document.getElementById('step-2').className = "mission-step p-4 bg-[#09090b] border border-[#27272a] rounded-xl flex flex-col gap-3 opacity-50";
         document.getElementById('buyer-upload-zone').classList.add('hidden');
         document.getElementById('step-2-status').classList.add('hidden');
         
-        document.getElementById('step-3').className = "mission-step p-3.5 bg-[#161617] border border-[#ff9f0a] rounded-xl flex items-start gap-3 animate-pulse";
+        document.getElementById('step-3').className = "mission-step p-4 bg-[#09090b] border border-[#ff9f0a] rounded-xl flex items-start gap-3";
         document.getElementById('step-3-status').classList.remove('hidden');
-        systemNotice("📢 ระบบกลาง: ตรวจพบเงินหลักฐานโอนเข้าระบบร้านค้ากลางเรียบร้อย! ปลอดภัย 100% ผู้ขายทำการส่งข้อมูลรหัสเข้าแชทได้ทันทีครับ");
+        systemNotice("📢 ระบบกลาง: ตรวจพบเงินหลักฐานโอนเข้าระบบกองกลางเรียบร้อย! ปลอดภัย 100% ผู้ขายทำการส่งข้อมูลรหัสเข้าแชทได้ทันทีครับ");
         
         if (myRole === 'buyer') {
           document.getElementById('buyer-confirm-zone').classList.remove('hidden');
@@ -289,12 +412,12 @@
       }
       else if (step === 4) {
         document.getElementById('check-3').innerHTML = "✓";
-        document.getElementById('check-3').className = "w-5 h-5 rounded-full flex items-center justify-center text-xs text-black bg-[#30d5c8]";
-        document.getElementById('step-3').className = "mission-step p-3.5 bg-[#161617] border border-[#424245]/40 rounded-xl flex items-start gap-3 opacity-60";
+        document.getElementById('check-3').className = "w-6 h-6 rounded-md font-bold flex items-center justify-center text-xs text-black bg-[#30d5c8]";
+        document.getElementById('step-3').className = "mission-step p-4 bg-[#09090b] border border-[#27272a] rounded-xl flex items-start gap-3 opacity-50";
         
         document.getElementById('check-4').innerHTML = "✓";
-        document.getElementById('check-4').className = "w-5 h-5 rounded-full flex items-center justify-center text-xs text-black bg-[#30d5c8]";
-        document.getElementById('step-4').className = "mission-step p-3.5 bg-[#30d5c8]/10 border border-[#30d5c8] rounded-xl flex flex-col gap-3";
+        document.getElementById('check-4').className = "w-6 h-6 rounded-md font-bold flex items-center justify-center text-xs text-black bg-[#30d5c8]";
+        document.getElementById('step-4').className = "mission-step p-4 bg-[#30d5c8]/10 border border-[#30d5c8] rounded-xl flex flex-col gap-3 cyber-glow";
         document.getElementById('buyer-confirm-zone').classList.add('hidden');
         
         systemNotice("🎉 [MISSION COMPLETED] ดีลซื้อขายนี้เสร็จสิ้นอย่างสมบูรณ์แบบ! ปล่อยเงินกลางให้ผู้ขายเรียบร้อย ขอบคุณที่ซื้อขายผ่านระบบ");
@@ -313,7 +436,7 @@
       if (round === 1) {
         document.getElementById('btn-confirm-1').classList.add('hidden');
         document.getElementById('btn-confirm-2').classList.remove('hidden');
-        document.getElementById('step-4').className = "mission-step p-3.5 bg-[#161617] border border-[#30d5c8] rounded-xl flex flex-col gap-3";
+        document.getElementById('step-4').className = "mission-step p-4 bg-[#09090b] border border-[#30d5c8] rounded-xl flex flex-col gap-3";
         channel.send({ type: 'broadcast', event: 'confirm_step_1', payload: {} });
         systemNotice("⚠️ คุณกดยืนยันสินค้ากึ่งกลางรอบที่ 1 แล้ว กรุณาตรวจสอบให้แน่ใจและเปลี่ยนรหัสไอดีเกมให้เรียบร้อย จากนั้นกดปุ่มสีเขียวเพื่อปิดงานรอบสุดท้าย");
       } else if (round === 2) {
@@ -336,15 +459,15 @@
     function appendMessage(text, side, role) {
       let box = document.getElementById('chat-messages');
       let roleName = role === 'buyer' ? 'ผู้ซื้อ 🛒' : 'ผู้ขาย 💰';
-      let bgColor = side === 'right' ? 'bg-[#0071e3] text-white' : 'bg-[#333336] text-[#f5f5f7]';
+      let bgColor = side === 'right' ? 'bg-[#0071e3] text-white shadow-lg shadow-[#0071e3]/20' : 'bg-[#18181b] text-[#f4f4f5] border border-[#27272a]';
       let justify = side === 'right' ? 'justify-end' : 'justify-start';
       let radius = side === 'right' ? 'rounded-tr-none' : 'rounded-tl-none';
 
       box.innerHTML += `
         <div class="flex ${justify}">
           <div class="flex flex-col max-w-xs">
-            <span class="text-[10px] text-[#86868b] px-1 mb-0.5 ${side === 'right' ? 'text-right' : 'text-left'}">${roleName}</span>
-            <div class="${bgColor} rounded-2xl ${radius} px-4 py-2 text-sm font-light break-all shadow-md">
+            <span class="text-[10px] text-[#a1a1aa] font-bold px-1 mb-0.5 ${side === 'right' ? 'text-right' : 'text-left'}">${roleName}</span>
+            <div class="${bgColor} rounded-xl ${radius} px-4 py-2.5 text-sm font-normal break-all shadow-md">
               ${text}
             </div>
           </div>
@@ -354,7 +477,7 @@
 
     function systemNotice(text) {
       let box = document.getElementById('chat-messages');
-      box.innerHTML += `<div class="flex justify-center"><div class="bg-[#ff9f0a]/10 border border-[#ff9f0a]/30 text-[#ff9f0a] text-[11px] px-4 py-1.5 rounded-xl text-center max-w-md font-light shadow-sm">${text}</div></div>`;
+      box.innerHTML += `<div class="flex justify-center"><div class="bg-[#ff9f0a]/10 border border-[#ff9f0a]/30 text-[#ff9f0a] text-[11px] px-4 py-2 rounded-lg text-center max-w-md font-medium shadow-sm">${text}</div></div>`;
       box.scrollTop = box.scrollHeight;
     }
   </script>
