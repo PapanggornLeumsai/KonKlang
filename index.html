@@ -377,6 +377,7 @@
     let sellerReady = false;
     let dealNetPrice = 0;
     let isPriceAccepted = false;
+    let isPhase1Verified = false;
 
     // Return & Refund State
     let isReturning = false;
@@ -388,7 +389,7 @@
     function saveStateToLocalStorage() {
       if(!currentRoom) return;
       const stateObj = {
-        currentRoom, myRole, currentStep, buyerReady, sellerReady, dealNetPrice, isPriceAccepted, chatHistory, isRoomCreator, isReturning, isReturnConfirmed
+        currentRoom, myRole, currentStep, buyerReady, sellerReady, dealNetPrice, isPriceAccepted, chatHistory, isRoomCreator, isReturning, isReturnConfirmed, isPhase1Verified
       };
       localStorage.setItem(`state_${currentRoom}`, JSON.stringify(stateObj));
     }
@@ -407,6 +408,7 @@
           isRoomCreator = parsed.isRoomCreator || false;
           isReturning = parsed.isReturning || false;
           isReturnConfirmed = parsed.isReturnConfirmed || false;
+          isPhase1Verified = parsed.isPhase1Verified || false;
           return true;
         } catch (e) {
           console.error("Local storage state corrupted", e);
@@ -427,6 +429,7 @@
       isRoomCreator = false;
       isReturning = false;
       isReturnConfirmed = false;
+      isPhase1Verified = false;
       removeImagePreview();
 
       let netPriceInput = document.getElementById('input-net-price');
@@ -929,12 +932,17 @@
           updateMissionUI(4);
         })
         .on('broadcast', { event: 'confirm_step_1' }, () => {
+          isPhase1Verified = true;
+          currentStep = 5;
+          saveStateToLocalStorage();
+          updateMissionUI(5);
           systemNotice("System: Buyer has confirmed verification round 1.");
         })
         .on('broadcast', { event: 'return_initiated' }, () => {
           isReturning = true;
+          currentStep = 5;
           saveStateToLocalStorage();
-          updateMissionUI(currentStep);
+          updateMissionUI(5);
           systemNotice("Buyer has rejected the asset and initiated a return.");
         })
         .on('broadcast', { event: 'return_confirmed' }, () => {
@@ -991,7 +999,7 @@
 
       document.getElementById('mission-timeline').classList.remove('opacity-40', 'pointer-events-none');
       
-      renderChatHistory(); // Always reload chat history
+      renderChatHistory(); 
       
       if(myRole) {
           updateRoleDisplayInChat();
@@ -1176,6 +1184,15 @@
         if(myRole === 'buyer') {
           document.getElementById('step-5').className = "p-4 bg-[#ffffff] border border-[#8b5a2b] rounded-xl flex flex-col gap-3 minimal-glow";
           document.getElementById('buyer-confirm-zone').classList.remove('hidden');
+          if (isPhase1Verified) {
+             document.getElementById('btn-confirm-1').classList.add('hidden');
+             document.getElementById('btn-return-asset').classList.add('hidden');
+             document.getElementById('btn-confirm-2').classList.remove('hidden');
+          } else {
+             document.getElementById('btn-confirm-1').classList.remove('hidden');
+             document.getElementById('btn-return-asset').classList.remove('hidden');
+             document.getElementById('btn-confirm-2').classList.add('hidden');
+          }
         } else {
           document.getElementById('step-5-seller-wait').classList.remove('hidden');
         }
@@ -1195,6 +1212,15 @@
         } else {
            if(myRole === 'buyer') {
              document.getElementById('buyer-confirm-zone').classList.remove('hidden');
+             if (isPhase1Verified) {
+                document.getElementById('btn-confirm-1').classList.add('hidden');
+                document.getElementById('btn-return-asset').classList.add('hidden');
+                document.getElementById('btn-confirm-2').classList.remove('hidden');
+             } else {
+                document.getElementById('btn-confirm-1').classList.remove('hidden');
+                document.getElementById('btn-return-asset').classList.remove('hidden');
+                document.getElementById('btn-confirm-2').classList.add('hidden');
+             }
            } else {
              document.getElementById('step-5-seller-wait').classList.remove('hidden');
            }
@@ -1245,9 +1271,10 @@
 
     function confirmReceipt(round) {
       if (round === 1) {
-        document.getElementById('btn-confirm-1').classList.add('hidden');
-        document.getElementById('btn-return-asset').classList.add('hidden');
-        document.getElementById('btn-confirm-2').classList.remove('hidden');
+        isPhase1Verified = true;
+        currentStep = 5;
+        saveStateToLocalStorage();
+        updateMissionUI(5);
         if (channel) { channel.send({ type: 'broadcast', event: 'confirm_step_1', payload: {} }); }
         systemNotice("Phase 1 verified! Please secure credentials, then proceed to final confirmation.");
       } else if (round === 2) {
@@ -1259,6 +1286,7 @@
     function initiateReturn() {
       if(confirm("Are you sure you want to reject the asset and initiate a return? The seller will need to verify the returned credentials.")) {
          isReturning = true;
+         currentStep = 5; 
          saveStateToLocalStorage();
          updateMissionUI(5);
          systemNotice("You have rejected the asset. Please return the credentials in chat.");
@@ -1268,8 +1296,9 @@
 
     function confirmReturnedAsset() {
       isReturnConfirmed = true;
+      currentStep = 6;
       saveStateToLocalStorage();
-      changeStep(6);
+      updateMissionUI(6);
       systemNotice("Asset returned and verified. Approving refund to the buyer.");
       if (channel) { channel.send({ type: 'broadcast', event: 'return_confirmed', payload: {} }); }
     }
