@@ -7,12 +7,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        /* สไตล์โลโก้สุดพรีเมียมตามแบบฟอนต์ที่คุณส่งมา */
-        .logo-classic { font-family: 'Cinzel', serif; font-weight: 700; letter-spacing: 0.15em; }
+        .logo-cute { font-family: 'Quicksand', sans-serif; }
         .minimal-panel { background-color: #fcfaf8; border: 1px solid #e8ddcb; }
         .minimal-card { background-color: #ffffff; border: 1px solid #e8ddcb; }
         .minimal-glow { box-shadow: 0 4px 20px rgba(139, 90, 43, 0.05); }
@@ -30,12 +29,7 @@
     <div class="max-w-6xl mx-auto h-14 flex items-center justify-between px-6">
       <div class="flex items-center gap-4">
         <button id="menu-btn" onclick="toggleSidebar()" class="hidden text-sm font-semibold tracking-wider text-[#9c8e81] hover:text-[#4a3c31] focus:outline-none">MENU</button>
-        <div class="logo-classic text-lg font-bold text-[#8b5a2b] cursor-pointer flex items-center gap-1.5" onclick="goHome()">
-          <svg class="w-5 h-5 text-[#8b5a2b]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-          </svg>
-          KONKLANG
-        </div>
+        <div class="logo-cute text-xl font-bold tracking-wider text-[#8b5a2b] cursor-pointer" onclick="goHome()">KONKLANG</div>
       </div>
       <div class="flex items-center gap-3">
         <div id="username-tag" class="text-xs bg-[#e8ddcb] px-2.5 py-1 rounded-md text-[#4a3c31] font-medium hidden"></div>
@@ -64,12 +58,7 @@
 
   <div id="login-page" class="min-h-screen flex flex-col items-center justify-center px-4">
     <div class="w-full max-w-sm minimal-panel p-8 rounded-xl minimal-glow text-center">
-      <div class="logo-classic text-3xl font-extrabold text-[#8b5a2b] mb-2 tracking-widest flex items-center justify-center gap-2">
-         <svg class="w-7 h-7 text-[#8b5a2b]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-         </svg>
-         KONKLANG
-      </div>
+      <h1 class="logo-cute text-4xl font-bold text-[#8b5a2b] mb-1 tracking-wide">KONKLANG</h1>
       <p id="auth-title" class="text-xs text-[#9c8e81] mb-6">Log in to use the secure trading system</p>
       
       <div id="invite-alert" class="hidden mb-4 p-2.5 rounded-lg text-xs bg-[#8b5a2b]/10 border border-[#8b5a2b]/20 text-[#8b5a2b] font-bold animate-pulse">
@@ -106,22 +95,17 @@
   </div>
 
   <div id="dashboard-page" class="hidden min-h-screen flex flex-col items-center justify-center px-4">
-    <div class="text-center max-w-lg w-full flex flex-col items-center">
-      <div class="mb-4 text-[#8b5a2b]">
-        <svg class="w-20 h-20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-        </svg>
-      </div>
-      <h1 class="logo-classic text-5xl font-black text-[#8b5a2b] tracking-widest mb-3">KONKLANG</h1>
-      <p class="text-xs text-[#9c8e81] font-bold uppercase tracking-[0.3em] mb-10">Secure Trading Platform</p>
+    <div class="text-center max-w-lg w-full">
+      <h1 class="logo-cute text-6xl font-bold text-[#8b5a2b] tracking-wider mb-2">KONKLANG</h1>
+      <p class="text-sm text-[#9c8e81] font-bold uppercase tracking-widest mb-8">Secure Escrow System</p>
       
-      <div class="mb-8">
-        <button onclick="startNewDeal()" class="bg-[#8b5a2b] hover:bg-[#6e4620] text-white font-bold py-4 px-12 rounded-lg text-xs uppercase tracking-widest transition-all shadow-lg">
+      <div class="mb-6">
+        <button onclick="startNewDeal()" class="bg-[#8b5a2b] hover:bg-[#6e4620] text-white font-bold py-4 px-12 rounded-lg text-sm uppercase tracking-widest transition-all shadow-md">
           Start New Deal
         </button>
       </div>
 
-      <div id="dashboard-active-rooms-panel" class="hidden mt-4 text-left minimal-panel p-5 rounded-xl w-full max-w-md mx-auto shadow-sm">
+      <div id="dashboard-active-rooms-panel" class="hidden mt-4 text-left minimal-panel p-4 rounded-xl max-w-md mx-auto">
         <p class="text-xs text-[#9c8e81] font-bold uppercase tracking-wider mb-3">Your Ongoing Deals</p>
         <div id="dashboard-rooms-list" class="space-y-2"></div>
       </div>
@@ -129,9 +113,9 @@
   </div>
 
   <div id="lobby-page" class="hidden min-h-screen flex flex-col items-center justify-center pt-16 px-4">
-    <div class="text-center mb-6 max-w-xl relative w-full flex flex-col items-center">
-      <h1 class="logo-classic text-2xl font-bold text-[#8b5a2b] tracking-wider mb-1">KONKLANG</h1>
-      <p class="text-xs text-[#9c8e81] font-semibold uppercase tracking-wider">Create or Join a Deal</p>
+    <div class="text-center mb-6 max-w-xl relative w-full">
+      <h1 class="logo-cute text-3xl font-bold text-[#8b5a2b] tracking-tight mb-2">KONKLANG</h1>
+      <p class="text-sm text-[#9c8e81] font-semibold uppercase">Create or Join a Deal</p>
       <button onclick="goHome()" class="absolute top-0 right-4 text-xs font-bold text-[#9c8e81] hover:text-[#4a3c31] p-1">CLOSE</button>
     </div>
 
@@ -194,7 +178,7 @@
           <div class="flex flex-col gap-1">
             <h3 class="text-[10px] font-bold text-[#9c8e81] uppercase tracking-widest">Deal Dashboard</h3>
             <span class="text-sm font-bold text-[#4a3c31] font-mono">ROOM: <span id="chat-room-id" class="text-[#8b5a2b]"></span></span>
-            <div class="mt-1 bg-[#8b5a2b] text-white px-2 py-0.5 rounded text-[10px] font-bold tracking-wider inline-block self-start uppercase">
+            <div class="mt-1 bg-[#e8ddcb] text-[#4a3c31] px-2 py-0.5 rounded text-[11px] font-bold inline-block self-start">
               Your Role: <span id="my-chat-role-label">Loading...</span>
             </div>
           </div>
@@ -395,7 +379,7 @@
     let isPriceAccepted = false;
     let isPhase1Verified = false;
 
-    // Return & Refund State (ซิงค์ข้ามฝั่งและทนทานการรีเฟรช)
+    // Return & Refund State
     let isReturning = false;
     let isReturnConfirmed = false;
 
@@ -491,7 +475,7 @@
       let timeline = document.getElementById('mission-timeline');
       if (timeline) { timeline.classList.add('opacity-40', 'pointer-events-none'); }
 
-      // Reset UI ย้อนคืน
+      // Reset Step Titles for Return Flow
       document.getElementById('step-5-title').innerText = "Buyer Verifies Asset";
       document.getElementById('step-6-title').innerText = "Escrow Payout to Seller";
       document.getElementById('return-buyer-wait').classList.add('hidden');
@@ -797,7 +781,7 @@
     function updateRoleDisplayInChat() {
        let roleLabel = document.getElementById('my-chat-role-label');
        if(roleLabel) {
-           roleLabel.innerText = myRole === 'buyer' ? 'BUYER 🛒' : 'SELLER 💰';
+           roleLabel.innerText = myRole === 'buyer' ? 'BUYER' : 'SELLER';
        }
     }
 
@@ -1145,7 +1129,7 @@
       document.getElementById('seller-payout-zone').classList.add('hidden');
       document.getElementById('step-6-status').classList.add('hidden');
 
-      // ล้างสถานะ UI สำหรับโหมดการคืนของ
+      // Return flow UI reset
       document.getElementById('return-buyer-wait').classList.add('hidden');
       document.getElementById('return-seller-zone').classList.add('hidden');
       document.getElementById('buyer-refund-zone').classList.add('hidden');
