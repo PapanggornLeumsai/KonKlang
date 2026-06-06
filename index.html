@@ -33,7 +33,6 @@
       </div>
       <div class="flex items-center gap-3">
         <div id="username-tag" class="text-xs bg-[#e8ddcb] px-2.5 py-1 rounded-md text-[#4a3c31] font-medium hidden"></div>
-        <div id="role-tag" class="text-xs bg-[#8b5a2b]/10 border border-[#8b5a2b]/20 px-2.5 py-1 rounded-md text-[#8b5a2b] font-medium hidden"></div>
         <button id="logout-btn" onclick="handleLogout()" class="text-xs bg-red-50 border border-red-200 px-2.5 py-1 rounded-md text-red-600 font-medium hidden hover:bg-red-100 transition-colors">Log Out</button>
       </div>
     </div>
@@ -179,6 +178,9 @@
           <div class="flex flex-col gap-1">
             <h3 class="text-[10px] font-bold text-[#9c8e81] uppercase tracking-widest">Deal Dashboard</h3>
             <span class="text-sm font-bold text-[#4a3c31] font-mono">ROOM: <span id="chat-room-id" class="text-[#8b5a2b]"></span></span>
+            <div class="mt-1 bg-[#e8ddcb] text-[#4a3c31] px-2 py-0.5 rounded text-[11px] font-bold inline-block self-start">
+              Your Role: <span id="my-chat-role-label">Loading...</span>
+            </div>
           </div>
           <div class="flex items-center gap-2">
             <button onclick="closeRoomPermanently()" class="text-[10px] bg-red-50 border border-red-200 text-red-600 font-bold px-2 py-1 rounded hover:bg-red-100 transition-all">Close Deal</button>
@@ -282,12 +284,23 @@
             <div class="flex items-start gap-3">
               <div id="check-5" class="shrink-0 w-6 h-6 rounded font-bold border border-[#e8ddcb] flex items-center justify-center text-[11px] text-[#9c8e81] bg-[#fcfaf8]">5</div>
               <div class="flex-1">
-                <h4 class="text-xs font-bold text-[#4a3c31]">Buyer Verifies Asset</h4>
+                <h4 class="text-xs font-bold text-[#4a3c31]" id="step-5-title">Buyer Verifies Asset</h4>
+                
                 <div id="buyer-confirm-zone" class="hidden mt-3 flex flex-col gap-2">
                   <button id="btn-confirm-1" onclick="confirmReceipt(1)" class="bg-[#d97706] text-white px-4 py-2 rounded text-[10px] font-bold uppercase tracking-wider">Asset Checked (Phase 1)</button>
+                  <button id="btn-return-asset" onclick="initiateReturn()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-[10px] font-bold uppercase tracking-wider">Reject & Return Asset</button>
                   <button id="btn-confirm-2" onclick="confirmReceipt(2)" class="hidden bg-[#6b8e6b] text-white px-4 py-2 rounded text-[10px] font-bold uppercase tracking-wider">Credentials Secured (Phase 2)</button>
                 </div>
                 <p id="step-5-seller-wait" class="text-[10px] text-[#9c8e81] mt-1 hidden">Waiting for buyer to secure the asset...</p>
+                
+                <div id="return-buyer-wait" class="hidden mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-center">
+                  <p class="text-[10px] text-red-600 font-bold">Return initiated. Please send credentials back in chat. Waiting for seller to verify...</p>
+                </div>
+                <div id="return-seller-zone" class="hidden mt-3 flex flex-col gap-2">
+                  <p class="text-[10px] text-red-600 font-bold mb-1">Buyer rejected the asset. Please verify the returned credentials.</p>
+                  <button onclick="confirmReturnedAsset()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-[10px] font-bold uppercase tracking-wider">Asset Returned & Verified</button>
+                </div>
+
               </div>
             </div>
           </div>
@@ -296,11 +309,17 @@
             <div class="flex items-start gap-3">
               <div id="check-6" class="shrink-0 w-6 h-6 rounded font-bold border border-[#e8ddcb] flex items-center justify-center text-[11px] text-[#9c8e81] bg-[#fcfaf8]">6</div>
               <div class="flex-1">
-                <h4 class="text-xs font-bold text-[#4a3c31]">Escrow Payout to Seller</h4>
-                <p id="step-6-status" class="text-[10px] text-[#9c8e81] mt-1 hidden">Processing payout to seller...</p>
+                <h4 class="text-xs font-bold text-[#4a3c31]" id="step-6-title">Escrow Payout to Seller</h4>
+                <p id="step-6-status" class="text-[10px] text-[#9c8e81] mt-1 hidden">Processing payout...</p>
+                
                 <div id="seller-payout-zone" class="hidden mt-3 p-3 bg-[#fcfaf8] border border-[#6b8e6b]/30 rounded-lg text-center">
                   <p class="text-[11px] text-[#6b8e6b] font-bold mb-2">Approved Payout: <span id="text-payout-amount">0</span> THB</p>
                   <button onclick="finishEntireDeal()" class="w-full bg-[#6b8e6b] hover:bg-[#537053] text-white font-bold py-2 rounded text-[10px] uppercase tracking-wider">Confirm Receipt & Close</button>
+                </div>
+
+                <div id="buyer-refund-zone" class="hidden mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-center">
+                  <p class="text-[11px] text-red-600 font-bold mb-2">Refund Amount (Fee Deducted): <span id="text-refund-amount">0</span> THB</p>
+                  <button onclick="finishEntireDeal()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded text-[10px] uppercase tracking-wider">Confirm Refund & Close</button>
                 </div>
               </div>
             </div>
@@ -359,13 +378,17 @@
     let dealNetPrice = 0;
     let isPriceAccepted = false;
 
+    // Return & Refund State
+    let isReturning = false;
+    let isReturnConfirmed = false;
+
     // Chat image variable
     let pendingImageBase64 = null;
 
     function saveStateToLocalStorage() {
       if(!currentRoom) return;
       const stateObj = {
-        currentRoom, myRole, currentStep, buyerReady, sellerReady, dealNetPrice, isPriceAccepted, chatHistory, isRoomCreator
+        currentRoom, myRole, currentStep, buyerReady, sellerReady, dealNetPrice, isPriceAccepted, chatHistory, isRoomCreator, isReturning, isReturnConfirmed
       };
       localStorage.setItem(`state_${currentRoom}`, JSON.stringify(stateObj));
     }
@@ -382,6 +405,8 @@
           isPriceAccepted = parsed.isPriceAccepted || false;
           chatHistory = parsed.chatHistory || [];
           isRoomCreator = parsed.isRoomCreator || false;
+          isReturning = parsed.isReturning || false;
+          isReturnConfirmed = parsed.isReturnConfirmed || false;
           return true;
         } catch (e) {
           console.error("Local storage state corrupted", e);
@@ -400,6 +425,8 @@
       isPriceAccepted = false;
       chatHistory = [];
       isRoomCreator = false;
+      isReturning = false;
+      isReturnConfirmed = false;
       removeImagePreview();
 
       let netPriceInput = document.getElementById('input-net-price');
@@ -409,6 +436,7 @@
       document.getElementById('text-shown-fee').innerText = "0";
       document.getElementById('text-shown-total').innerText = "0";
       document.getElementById('text-payout-amount').innerText = "0";
+      document.getElementById('text-refund-amount').innerText = "0";
 
       let priceTag = document.getElementById('price-tag');
       if (priceTag) {
@@ -443,6 +471,17 @@
 
       let timeline = document.getElementById('mission-timeline');
       if (timeline) { timeline.classList.add('opacity-40', 'pointer-events-none'); }
+
+      // Reset Step Titles for Return Flow
+      document.getElementById('step-5-title').innerText = "Buyer Verifies Asset";
+      document.getElementById('step-6-title').innerText = "Escrow Payout to Seller";
+      document.getElementById('return-buyer-wait').classList.add('hidden');
+      document.getElementById('return-seller-zone').classList.add('hidden');
+      document.getElementById('buyer-refund-zone').classList.add('hidden');
+      
+      document.getElementById('btn-confirm-1').classList.remove('hidden');
+      document.getElementById('btn-return-asset').classList.remove('hidden');
+      document.getElementById('btn-confirm-2').classList.add('hidden');
 
       updatePresenceUI('buyer', false);
       updatePresenceUI('seller', false);
@@ -504,7 +543,7 @@
         if (activeRoomSession) {
           currentRoom = activeRoomSession;
           myRole = localStorage.getItem('activeRoomRole') || "";
-          
+
           loadStateFromLocalStorage(currentRoom);
           updateSidebarActiveRoom(currentRoom);
           goToChatScreen(currentRoom);
@@ -600,10 +639,6 @@
       currentRoom = "";
       myRole = "";
       resetRoomUIAndState();
-      
-      let rt = document.getElementById('role-tag');
-      if(rt) rt.classList.add('hidden');
-
       document.getElementById('chat-page').classList.add('hidden');
       document.getElementById('dashboard-page').classList.remove('hidden');
     }
@@ -611,10 +646,6 @@
     function leaveRoom() {
       document.getElementById('chat-page').classList.add('hidden');
       document.getElementById('dashboard-page').classList.remove('hidden');
-      
-      let rt = document.getElementById('role-tag');
-      if(rt) rt.classList.add('hidden');
-
       localStorage.removeItem('activeRoomCode'); 
     }
 
@@ -657,9 +688,6 @@
       document.getElementById('btn-role-buyer').className = 'minimal-card border border-[#e8ddcb] hover:border-[#8b5a2b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all';
       document.getElementById('btn-role-seller').className = 'minimal-card border border-[#e8ddcb] hover:border-[#8b5a2b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all';
 
-      let rt = document.getElementById('role-tag');
-      if(rt) rt.classList.add('hidden');
-
       document.getElementById('lobby-page').classList.remove('hidden');
     }
 
@@ -668,10 +696,6 @@
       document.getElementById('lobby-page').classList.add('hidden');
       document.getElementById('chat-page').classList.add('hidden');
       document.getElementById('dashboard-page').classList.remove('hidden');
-      
-      let rt = document.getElementById('role-tag');
-      if(rt) rt.classList.add('hidden');
-
       localStorage.removeItem('activeRoomCode');
     }
 
@@ -746,13 +770,16 @@
       updatePresenceUI('seller', false);
       
       if(myRole) { 
-          let rt = document.getElementById('role-tag');
-          if(rt) {
-             rt.innerText = myRole === 'buyer' ? 'Buyer' : 'Seller';
-             rt.classList.remove('hidden');
-          }
+          updateRoleDisplayInChat();
           updatePresenceUI(myRole, true); 
       }
+    }
+    
+    function updateRoleDisplayInChat() {
+       let roleLabel = document.getElementById('my-chat-role-label');
+       if(roleLabel) {
+           roleLabel.innerText = myRole === 'buyer' ? 'BUYER' : 'SELLER';
+       }
     }
 
     function saveRoomToSidebar(code) {
@@ -852,12 +879,7 @@
                 
                 localStorage.setItem('activeRoomRole', myRole);
                 saveStateToLocalStorage();
-                
-                let rt = document.getElementById('role-tag');
-                if(rt) {
-                   rt.innerText = myRole === 'buyer' ? 'Buyer' : 'Seller';
-                   rt.classList.remove('hidden');
-                }
+                updateRoleDisplayInChat();
                 
                 if (oldRole) updatePresenceUI(oldRole, false);
                 updatePresenceUI(myRole, true);
@@ -909,6 +931,19 @@
         .on('broadcast', { event: 'confirm_step_1' }, () => {
           systemNotice("System: Buyer has confirmed verification round 1.");
         })
+        .on('broadcast', { event: 'return_initiated' }, () => {
+          isReturning = true;
+          saveStateToLocalStorage();
+          updateMissionUI(currentStep);
+          systemNotice("Buyer has rejected the asset and initiated a return.");
+        })
+        .on('broadcast', { event: 'return_confirmed' }, () => {
+          isReturnConfirmed = true;
+          currentStep = 6;
+          saveStateToLocalStorage();
+          updateMissionUI(6);
+          systemNotice("Seller has verified the returned asset. Processing refund for the buyer.");
+        })
         .on('broadcast', { event: 'confirm_step_2' }, () => {
           currentStep = 6;
           saveStateToLocalStorage();
@@ -956,9 +991,10 @@
 
       document.getElementById('mission-timeline').classList.remove('opacity-40', 'pointer-events-none');
       
-      renderChatHistory(); // Always refresh chat from array so it never disappears!
+      renderChatHistory(); // Always reload chat history
       
       if(myRole) {
+          updateRoleDisplayInChat();
           updatePresenceUI(myRole, true);
       }
       
@@ -1052,11 +1088,13 @@
       const textFee = document.getElementById('text-shown-fee');
       const textTotal = document.getElementById('text-shown-total');
       const textPayout = document.getElementById('text-payout-amount');
+      const textRefund = document.getElementById('text-refund-amount');
       
       if(textNet) textNet.innerText = netPrice.toLocaleString();
       if(textFee) textFee.innerText = fee.toLocaleString();
       if(textTotal) textTotal.innerText = totalWithFee.toLocaleString();
       if(textPayout) textPayout.innerText = netPrice.toLocaleString();
+      if(textRefund) textRefund.innerText = netPrice.toLocaleString();
     }
 
     function updateMissionUI(step) {
@@ -1082,6 +1120,13 @@
       document.getElementById('step-5-seller-wait').classList.add('hidden');
       document.getElementById('seller-payout-zone').classList.add('hidden');
       document.getElementById('step-6-status').classList.add('hidden');
+
+      // Return flow UI reset
+      document.getElementById('return-buyer-wait').classList.add('hidden');
+      document.getElementById('return-seller-zone').classList.add('hidden');
+      document.getElementById('buyer-refund-zone').classList.add('hidden');
+      document.getElementById('step-5-title').innerText = "Buyer Verifies Asset";
+      document.getElementById('step-6-title').innerText = "Escrow Payout to Seller";
 
       for(let i=1; i<step; i++) {
         let stepEl = document.getElementById(`step-${i}`);
@@ -1140,19 +1185,39 @@
         document.getElementById('check-4').innerHTML = "✓";
         document.getElementById('check-4').className = "shrink-0 w-6 h-6 rounded font-bold flex items-center justify-center text-[11px] text-white bg-[#6b8e6b]";
         
-        if(myRole === 'buyer') {
-          document.getElementById('buyer-confirm-zone').classList.remove('hidden');
+        if (isReturning) {
+           document.getElementById('step-5-title').innerText = "Asset Return Process";
+           if(myRole === 'buyer') {
+              document.getElementById('return-buyer-wait').classList.remove('hidden');
+           } else {
+              document.getElementById('return-seller-zone').classList.remove('hidden');
+           }
         } else {
-          document.getElementById('step-5-seller-wait').classList.remove('hidden');
+           if(myRole === 'buyer') {
+             document.getElementById('buyer-confirm-zone').classList.remove('hidden');
+           } else {
+             document.getElementById('step-5-seller-wait').classList.remove('hidden');
+           }
         }
       }
       else if(step === 6) {
-        if(myRole === 'seller') {
-          document.getElementById('seller-payout-zone').classList.remove('hidden');
-          renderPriceElements(dealNetPrice);
+        if (isReturning && isReturnConfirmed) {
+           document.getElementById('step-6-title').innerText = "Refund to Buyer";
+           if(myRole === 'buyer') {
+              document.getElementById('buyer-refund-zone').classList.remove('hidden');
+              renderPriceElements(dealNetPrice);
+           } else {
+              document.getElementById('step-6-status').classList.remove('hidden');
+              document.getElementById('step-6-status').innerText = "Processing refund to buyer...";
+           }
         } else {
-          document.getElementById('step-6-status').classList.remove('hidden');
-          document.getElementById('step-6-status').innerText = "Processing payout to seller...";
+           if(myRole === 'seller') {
+             document.getElementById('seller-payout-zone').classList.remove('hidden');
+             renderPriceElements(dealNetPrice);
+           } else {
+             document.getElementById('step-6-status').classList.remove('hidden');
+             document.getElementById('step-6-status').innerText = "Processing payout to seller...";
+           }
         }
       }
       else if(step === 7) {
@@ -1181,6 +1246,7 @@
     function confirmReceipt(round) {
       if (round === 1) {
         document.getElementById('btn-confirm-1').classList.add('hidden');
+        document.getElementById('btn-return-asset').classList.add('hidden');
         document.getElementById('btn-confirm-2').classList.remove('hidden');
         if (channel) { channel.send({ type: 'broadcast', event: 'confirm_step_1', payload: {} }); }
         systemNotice("Phase 1 verified! Please secure credentials, then proceed to final confirmation.");
@@ -1190,9 +1256,33 @@
       }
     }
 
+    function initiateReturn() {
+      if(confirm("Are you sure you want to reject the asset and initiate a return? The seller will need to verify the returned credentials.")) {
+         isReturning = true;
+         saveStateToLocalStorage();
+         updateMissionUI(5);
+         systemNotice("You have rejected the asset. Please return the credentials in chat.");
+         if (channel) { channel.send({ type: 'broadcast', event: 'return_initiated', payload: {} }); }
+      }
+    }
+
+    function confirmReturnedAsset() {
+      isReturnConfirmed = true;
+      saveStateToLocalStorage();
+      changeStep(6);
+      systemNotice("Asset returned and verified. Approving refund to the buyer.");
+      if (channel) { channel.send({ type: 'broadcast', event: 'return_confirmed', payload: {} }); }
+    }
+
     function finishEntireDeal() {
       changeStep(7);
-      systemNotice("Deal successfully closed. Escrow funds released to the seller. 100% Secure.");
+      if(channel) { channel.send({ type: 'broadcast', event: 'deal_fully_finished', payload: {} }); }
+      
+      if(isReturning && isReturnConfirmed) {
+         systemNotice("Deal closed. Escrow refund successfully released to the buyer.");
+      } else {
+         systemNotice("Deal successfully closed. Escrow funds released to the seller. 100% Secure.");
+      }
     }
 
     function previewImage() {
