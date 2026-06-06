@@ -33,6 +33,7 @@
       </div>
       <div class="flex items-center gap-3">
         <div id="username-tag" class="text-xs bg-[#e8ddcb] px-2.5 py-1 rounded-md text-[#4a3c31] font-medium hidden"></div>
+        <div id="role-tag" class="text-xs bg-[#8b5a2b]/10 border border-[#8b5a2b]/20 px-2.5 py-1 rounded-md text-[#8b5a2b] font-medium hidden"></div>
         <button id="logout-btn" onclick="handleLogout()" class="text-xs bg-red-50 border border-red-200 px-2.5 py-1 rounded-md text-red-600 font-medium hidden hover:bg-red-100 transition-colors">Log Out</button>
       </div>
     </div>
@@ -503,7 +504,7 @@
         if (activeRoomSession) {
           currentRoom = activeRoomSession;
           myRole = localStorage.getItem('activeRoomRole') || "";
-
+          
           loadStateFromLocalStorage(currentRoom);
           updateSidebarActiveRoom(currentRoom);
           goToChatScreen(currentRoom);
@@ -599,6 +600,10 @@
       currentRoom = "";
       myRole = "";
       resetRoomUIAndState();
+      
+      let rt = document.getElementById('role-tag');
+      if(rt) rt.classList.add('hidden');
+
       document.getElementById('chat-page').classList.add('hidden');
       document.getElementById('dashboard-page').classList.remove('hidden');
     }
@@ -606,6 +611,10 @@
     function leaveRoom() {
       document.getElementById('chat-page').classList.add('hidden');
       document.getElementById('dashboard-page').classList.remove('hidden');
+      
+      let rt = document.getElementById('role-tag');
+      if(rt) rt.classList.add('hidden');
+
       localStorage.removeItem('activeRoomCode'); 
     }
 
@@ -648,6 +657,9 @@
       document.getElementById('btn-role-buyer').className = 'minimal-card border border-[#e8ddcb] hover:border-[#8b5a2b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all';
       document.getElementById('btn-role-seller').className = 'minimal-card border border-[#e8ddcb] hover:border-[#8b5a2b] p-4 rounded-lg flex flex-col items-center gap-2 transition-all';
 
+      let rt = document.getElementById('role-tag');
+      if(rt) rt.classList.add('hidden');
+
       document.getElementById('lobby-page').classList.remove('hidden');
     }
 
@@ -656,6 +668,10 @@
       document.getElementById('lobby-page').classList.add('hidden');
       document.getElementById('chat-page').classList.add('hidden');
       document.getElementById('dashboard-page').classList.remove('hidden');
+      
+      let rt = document.getElementById('role-tag');
+      if(rt) rt.classList.add('hidden');
+
       localStorage.removeItem('activeRoomCode');
     }
 
@@ -729,7 +745,14 @@
       updatePresenceUI('buyer', false);
       updatePresenceUI('seller', false);
       
-      if(myRole) { updatePresenceUI(myRole, true); }
+      if(myRole) { 
+          let rt = document.getElementById('role-tag');
+          if(rt) {
+             rt.innerText = myRole === 'buyer' ? 'Buyer' : 'Seller';
+             rt.classList.remove('hidden');
+          }
+          updatePresenceUI(myRole, true); 
+      }
     }
 
     function saveRoomToSidebar(code) {
@@ -787,6 +810,10 @@
       goToChatScreen(code);
       listenToRoom(code);
       
+      setTimeout(() => {
+        triggerFullRoomOpen();
+      }, 300);
+      
       const sidebar = document.getElementById('sidebar');
       if (!sidebar.classList.contains('-translate-x-full')) { toggleSidebar(); }
     }
@@ -825,6 +852,12 @@
                 
                 localStorage.setItem('activeRoomRole', myRole);
                 saveStateToLocalStorage();
+                
+                let rt = document.getElementById('role-tag');
+                if(rt) {
+                   rt.innerText = myRole === 'buyer' ? 'Buyer' : 'Seller';
+                   rt.classList.remove('hidden');
+                }
                 
                 if (oldRole) updatePresenceUI(oldRole, false);
                 updatePresenceUI(myRole, true);
@@ -923,7 +956,7 @@
 
       document.getElementById('mission-timeline').classList.remove('opacity-40', 'pointer-events-none');
       
-      if(chatHistory.length === 0) { renderChatHistory(); }
+      renderChatHistory(); // Always refresh chat from array so it never disappears!
       
       if(myRole) {
           updatePresenceUI(myRole, true);
